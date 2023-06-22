@@ -1,6 +1,4 @@
 (function ($) {
-    "use strict";
-
     // Spinner
     var spinner = function () {
         setTimeout(function () {
@@ -13,6 +11,7 @@
     
     
     // Initiate the wowjs
+    // eslint-disable-next-line no-undef
     new WOW().init();
 
 
@@ -75,5 +74,6 @@
     });
 
     
+// eslint-disable-next-line no-undef
 })(jQuery);
 

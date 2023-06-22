@@ -11,3 +11,14 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.testimonials-dots {
+  height: 30px;
+  align-items: center;
+  bottom: 0 !important;
+  margin-bottom: 0;
+}
+
+.testimonials-dots button {
+  background: #3630c9 !important;
+}

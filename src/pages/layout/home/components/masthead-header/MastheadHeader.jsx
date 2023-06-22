@@ -1,6 +1,8 @@
 
 import React from 'react';
 
+import './MastheadHeader.css';
+
 class MastheadHeader extends React.Component {
     render() {
         return (
@@ -15,7 +17,7 @@ class MastheadHeader extends React.Component {
                                     <div className="container">
                                         <div className="row justify-content-start">
                                             <div className="col-lg-7">
-                                                <h1 className="display-2 mb-5 animated slideInDown">To create one's world in any of the arts takes courage.</h1>
+                                                <h1 className="display-2 mb-5 animated slideInDown ml-5 masthead-header-art-quote">To create one's world in any of the arts takes courage.</h1>
                                             </div>
                                         </div>
                                     </div>
@@ -27,7 +29,7 @@ class MastheadHeader extends React.Component {
                                     <div className="container">
                                         <div className="row justify-content-start">
                                             <div className="col-lg-7">
-                                                <h1 className="display-2 mb-5 animated slideInDown">A true artist is not one who is inspired, but one who inspires others.</h1>
+                                                <h1 className="display-2 mb-5 animated slideInDown masthead-header-art-quote">A true artist is not one who is inspired, but one who inspires others.</h1>
                                             </div>
                                         </div>
                                     </div>

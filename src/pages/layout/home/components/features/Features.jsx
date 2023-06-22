@@ -4,7 +4,7 @@ import React from "react";
 class Features extends React.Component {
     render() {
         return (
-            <div className="features-wrapper">=
+            <div className="features-wrapper">
                 {/* Feature Start */}
                 <div className="container-fluid bg-light bg-icon my-5 py-6">
                     <div className="container">

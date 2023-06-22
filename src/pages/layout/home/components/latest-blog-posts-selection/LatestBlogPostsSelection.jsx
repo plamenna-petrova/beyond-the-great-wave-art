@@ -7,7 +7,6 @@ class LatestBlogPostsSelection extends React.Component {
     render() {
         return (
             <div className="latest-blog-posts-selection-wrapper">
-                {/* Blog Start */}
                 <div className="container-xxl py-5">
                     <div className="container">
                         <div className="section-header text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style={{ maxWidth: 500 + 'px' }}>
@@ -23,7 +22,6 @@ class LatestBlogPostsSelection extends React.Component {
                         </div>
                     </div>
                 </div>
-                {/* Blog End */}
             </div>
         )
     }

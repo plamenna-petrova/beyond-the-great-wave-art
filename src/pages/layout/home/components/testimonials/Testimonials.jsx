@@ -12,7 +12,6 @@ class Testimonials extends React.Component {
     render() {
         return (
             <div className="testimonials-wrapper">
-                {/* Testimonials Start */}
                 <div className="container-fluid bg-light bg-icon py-6 mb-5">
                     <div className="container">
                         <div className="section-header text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style={{ maxWidth: 500 + 'px' }}>
@@ -40,7 +39,6 @@ class Testimonials extends React.Component {
                         </Carousel>
                     </div>
                 </div>
-                {/* Testimonials End */}
             </div>
         )
     }

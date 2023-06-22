@@ -5,7 +5,6 @@ class Features extends React.Component {
     render() {
         return (
             <div className="features-wrapper">
-                {/* Feature Start */}
                 <div className="container-fluid bg-light bg-icon my-5 py-6">
                     <div className="container">
                         <div className="section-header text-center mx-auto mb-5 wow fadeInUp" data-wow-delay="0.1s" style={{ maxWidth: 500 + 'px' }}>
@@ -40,7 +39,6 @@ class Features extends React.Component {
                         </div>
                     </div>
                 </div>
-                {/* Feature End */}
             </div>
         )
     }

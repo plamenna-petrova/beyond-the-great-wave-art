@@ -5,7 +5,6 @@ class Invitation extends React.Component {
     render() {
         return (
             <div className="invitation-wrapper">
-                {/* Firm Visit Start */}
                 <div className="container-fluid bg-primary bg-icon mt-5 py-6">
                     <div className="container">
                         <div className="row g-5 align-items-center">
@@ -20,7 +19,6 @@ class Invitation extends React.Component {
                         </div>
                     </div>
                 </div>
-                {/* Firm Visit End */}
             </div>
         )
     }

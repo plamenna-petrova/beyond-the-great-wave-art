@@ -5,7 +5,6 @@ class About extends React.Component {
     render() {
         return (
             <div className="about-wrapper">
-                {/* About Start */}
                 <div className="container-xxl py-5">
                     <div className="container">
                         <div className="row g-5 align-items-center">
@@ -25,7 +24,6 @@ class About extends React.Component {
                         </div>
                     </div>
                 </div>
-                {/* About End */}
             </div>
         )
     }

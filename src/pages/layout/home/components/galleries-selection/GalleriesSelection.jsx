@@ -7,7 +7,6 @@ class GalleriesSelection extends React.Component {
     render() {
         return (
             <div className="galleries-selection-wrapper">
-                {/* Galleries Selection Start */}
                 <div className="container-xxl py-5">
                     <div className="container">
                         <div className="row g-0 gx-5 align-items-end">
@@ -71,7 +70,6 @@ class GalleriesSelection extends React.Component {
                         </div>
                     </div>
                 </div>
-                {/* Galleries Selection End */}
             </div>
         )
     }

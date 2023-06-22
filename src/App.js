@@ -6,6 +6,38 @@ import { Carousel } from 'antd';
 
 import './App.css';
 
+const testimonialsDataForCarousel = [
+    {
+        id: '1',
+        imageSrc: firstHomePageCarouselImage,
+        imageAlt: 'Gallery Testimonial 1',
+        textContent: 'Gallery Review From User 1'
+    },
+    {
+        id: '2',
+        imageSrc: firstHomePageCarouselImage,
+        imageAlt: 'Gallery Testimonial 2',
+        textContent: 'Gallery Review From User 2'
+    },
+    {
+        id: '3',
+        imageSrc: firstHomePageCarouselImage,
+        imageAlt: 'Gallery Testimonial 3',
+        textContent: 'Gallery Review From User 3'
+    },
+    {
+        id: '4',
+        imageSrc: firstHomePageCarouselImage,
+        imageAlt: 'Gallery Testimonial 4',
+        textContent: 'Gallery Review From User 4'
+    },
+];
+
+const testimonialImagesForCarouselStyle = {
+    width: 90 + 'px',
+    height: 90 + 'px'
+};
+
 const App = () => {
     return (
         <div className="App">
@@ -187,13 +219,13 @@ const App = () => {
                         <div className="col-lg-6 text-start text-lg-end wow slideInRight" data-wow-delay="0.1s">
                             <ul className="nav nav-pills d-inline-flex justify-content-end mb-5">
                                 <li className="nav-item me-2">
-                                    <a className="btn btn-outline-primary border-2 active" data-bs-toggle="pill" href="#tab-1">Vegetable</a>
+                                    <a className="btn btn-outline-primary border-2 active" data-bs-toggle="pill" href="#tab-1">Contemporary</a>
                                 </li>
                                 <li className="nav-item me-2">
-                                    <a className="btn btn-outline-primary border-2" data-bs-toggle="pill" href="#tab-2">Fruits </a>
+                                    <a className="btn btn-outline-primary border-2" data-bs-toggle="pill" href="#tab-2">Historical</a>
                                 </li>
                                 <li className="nav-item me-0">
-                                    <a className="btn btn-outline-primary border-2" data-bs-toggle="pill" href="#tab-3">Fresh</a>
+                                    <a className="btn btn-outline-primary border-2" data-bs-toggle="pill" href="#tab-3">Abstract</a>
                                 </li>
                             </ul>
                         </div>
@@ -370,7 +402,7 @@ const App = () => {
                                     </div>
                                 </div>
                                 <div className="col-12 text-center wow fadeInUp" data-wow-delay="0.1s">
-                                    <a className="btn btn-primary rounded-pill py-3 px-5" href="/">Browse More Products</a>
+                                    <a className="btn btn-primary rounded-pill mt-5 py-3 px-5" href="/">Browse More Products</a>
                                 </div>
                             </div>
                         </div>
@@ -754,58 +786,23 @@ const App = () => {
                         <p>Tempor ut dolore lorem kasd vero ipsum sit eirmod sit. Ipsum diam justo sed rebum vero dolor duo.</p>
                     </div>
                     <Carousel effect='scrollX' autoplay waitForAnimate={true} dotPosition={'bottom'} dots={{ className: 'testimonials-dots' }}>
-                        <div>
-                            <div className="testimonial-item position-relative bg-white p-5 mt-4">
-                                <i className="fa fa-quote-left fa-3x text-primary position-absolute top-0 start-0 mt-n4 ms-5"></i>
-                                <h4 className="mb-4">Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit diam amet diam et eos. Clita erat ipsum et lorem et sit.</h4>
-                                <div className="d-flex align-items-center justify-content-center">
-                                    <img className="flex-shrink-0 rounded-circle" src={firstHomePageCarouselImage} style={{ width: 90 + 'px', height: 90 + 'px' }} alt="" />
-                                    <div className="ms-3">
-                                        <h5 className="mb-1">Client Name</h5>
-                                        <span>Profession</span>
+                        {
+                            testimonialsDataForCarousel.map(testimonialsDatumForCarousel => (
+                                <div key={testimonialsDatumForCarousel.id}>
+                                    <div className="testimonial-item position-relative bg-white p-5 mt-4">
+                                        <i className="fa fa-quote-left fa-3x text-primary position-absolute top-0 start-0 mt-n4 ms-5"></i>
+                                        <h4 className="mb-4">Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit diam amet diam et eos. Clita erat ipsum et lorem et sit.</h4>
+                                        <div className="d-flex align-items-center justify-content-center">
+                                            <img className="flex-shrink-0 rounded-circle" src={testimonialsDatumForCarousel.imageSrc} style={testimonialImagesForCarouselStyle} alt={testimonialsDatumForCarousel.imageAlt} />
+                                            <div className="ms-3">
+                                                <h5 className="mb-1">Client Name</h5>
+                                                <span>Profession</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div className="testimonial-item position-relative bg-white p-5 mt-4">
-                                <i className="fa fa-quote-left fa-3x text-primary position-absolute top-0 start-0 mt-n4 ms-5"></i>
-                                <h4 className="mb-4">Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit diam amet diam et eos. Clita erat ipsum et lorem et sit.</h4>
-                                <div className="d-flex align-items-center justify-content-center">
-                                    <img className="flex-shrink-0 rounded-circle" src={firstHomePageCarouselImage} style={{ width: 90 + 'px', height: 90 + 'px' }} alt="" />
-                                    <div className="ms-3">
-                                        <h5 className="mb-1">Client Name</h5>
-                                        <span>Profession</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div className="testimonial-item position-relative bg-white p-5 mt-4">
-                                <i className="fa fa-quote-left fa-3x text-primary position-absolute top-0 start-0 mt-n4 ms-5"></i>
-                                <h4 className="mb-4">Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit diam amet diam et eos. Clita erat ipsum et lorem et sit.</h4>
-                                <div className="d-flex align-items-center justify-content-center">
-                                    <img className="flex-shrink-0 rounded-circle" src={firstHomePageCarouselImage} style={{ width: 90 + 'px', height: 90 + 'px' }} alt="" />
-                                    <div className="ms-3">
-                                        <h5 className="mb-1">Client Name</h5>
-                                        <span>Profession</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <div className="testimonial-item position-relative bg-white p-5 mt-4">
-                                <i className="fa fa-quote-left fa-3x text-primary position-absolute top-0 start-0 mt-n4 ms-5"></i>
-                                <h4 className="mb-4">Tempor erat elitr rebum at clita. Diam dolor diam ipsum sit diam amet diam et eos. Clita erat ipsum et lorem et sit.</h4>
-                                <div className="d-flex align-items-center justify-content-center">
-                                    <img className="flex-shrink-0 rounded-circle" src={firstHomePageCarouselImage} style={{ width: 90 + 'px', height: 90 + 'px' }} alt="" />
-                                    <div className="ms-3">
-                                        <h5 className="mb-1">Client Name</h5>
-                                        <span>Profession</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                            ))
+                        }
                     </Carousel>
                 </div>
             </div>

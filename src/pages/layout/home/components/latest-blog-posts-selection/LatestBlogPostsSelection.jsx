@@ -15,8 +15,8 @@ class LatestBlogPostsSelection extends React.Component {
                         </div>
                         <div className="row g-4">
                             {
-                                this.props.latestBlogPostsForSelection.map(latestBlogPostForSelection => (
-                                    <BlogPostSelectionCard blogPostSelectionDetails={latestBlogPostForSelection} />
+                                this.props.latestBlogPostsForSelection.map((latestBlogPostForSelection, index) => (
+                                    <BlogPostSelectionCard blogPostSelectionDetails={latestBlogPostForSelection} key={index}  />
                                 ))
                             }
                         </div>

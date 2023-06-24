@@ -5,23 +5,39 @@ import './App.css';
 
 import Navbar from './components/navbar/Navbar';
 import Home from "./pages/layout/home/Home";
+import AboutUs from "./pages/layout/about-us/AboutUs";
 import Footer from "./components/footer/Footer";
+import ScrollToTopButton from "./components/scroll-to-top-button/ScrollToTopButton";
+import NotFoundPage from "./pages/layout/not-found-page/NotFoundPage";
+
+const routes = [
+    {
+        path: '/',
+        element: <Home />
+    },
+    {
+        path: '/about-us',
+        element: <AboutUs />
+    },
+    {
+        path: '*',
+        element: <NotFoundPage />
+    }
+]
 
 const App = () => {
     return (
         <div className="App">
             <Navbar />
-
-            {/* Router Outlet Start */}
             <Routes>
-                <Route path="/" element={<Home />} />
+                {
+                    routes.map((route, index) => (
+                        <Route key={index} path={route.path} element={route.element} />
+                    ))
+                }
             </Routes>
-            {/* Router Outlet End */}
-
-            <Footer />
-
-            {/* Back to Top */}
-            <a href="/" className="btn btn-lg btn-primary btn-lg-square rounded-circle back-to-top"><i className="bi bi-arrow-up"></i></a>
+            <Footer />  
+            <ScrollToTopButton />
         </div>
     );
 }

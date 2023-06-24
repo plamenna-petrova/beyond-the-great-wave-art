@@ -56,7 +56,6 @@ const Home = () => {
 
     useEffect(() => {
         const sampleGalleries = [];
-        const sampleBlogPostsForSelection = [];
 
         for (let i = 0; i < 24; i++) {
             sampleGalleries.push({
@@ -71,6 +70,10 @@ const Home = () => {
         }
 
         setGalleriesForSelection(sampleGalleries);
+    }, []);
+
+    useEffect(() => {
+        const sampleBlogPostsForSelection = [];
 
         for (let i = 0; i < 3; i++) {
             const currentDate = new Date();

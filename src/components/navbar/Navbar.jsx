@@ -7,6 +7,21 @@ const navLinkBaseClass = 'nav-item nav-link';
 const dropDownToggleBaseClass = 'nav-link dropdown-toggle';
 const dropDownItemBaseClass = 'dropdown-item';
 
+const addActivityIndicationClassToNavLink = (isCurrentRouteActive, navigationArgs) => {
+    const [isPrimaryNavigation, dropdownNavigationArgs] = navigationArgs;
+    const [isDropdownToggle, isDropdownItem] = dropdownNavigationArgs || [];
+
+    if (isPrimaryNavigation && dropdownNavigationArgs !== []) {
+        return isCurrentRouteActive ? `${navLinkBaseClass} active` : `${navLinkBaseClass}`;
+    } else {
+        if (isDropdownToggle && !isDropdownItem) {
+            return isCurrentRouteActive ? `${dropDownToggleBaseClass} active` : `${dropDownToggleBaseClass}`;
+        } else if (!isDropdownToggle && isDropdownItem) {
+            return isCurrentRouteActive ? `${dropDownItemBaseClass} active` : `${dropDownItemBaseClass}`;
+        } 
+    }
+}
+
 const Navbar = () => {
     return (
         <div className="navbar-wrapper">
@@ -33,17 +48,17 @@ const Navbar = () => {
                     </button>
                     <div className="collapse navbar-collapse" id="navbarCollapse">
                         <div className="navbar-nav ms-auto p-4 p-lg-0">
-                            <NavLink to="/" className={({ isActive }) => (isActive ? `${navLinkBaseClass} active` : `${navLinkBaseClass}`)}>Home</NavLink>
-                            <NavLink to="/" className={({ isActive }) => (isActive ? `${navLinkBaseClass} active` : `${navLinkBaseClass}`)}>Galleries</NavLink>
+                            <NavLink to="/" className={({ isActive }) => addActivityIndicationClassToNavLink(isActive, [true, null])}>Home</NavLink>
+                            <NavLink to="/" className={({ isActive }) => addActivityIndicationClassToNavLink(isActive, [true, null])}>Galleries</NavLink>
                             <div className="nav-item dropdown">
-                                <NavLink to="/" className={({ isActive }) => (isActive ? `${dropDownToggleBaseClass} active` : `${dropDownToggleBaseClass}`)} data-bs-toggle="dropdown">Features</NavLink>
+                                <NavLink to="/" className={({ isActive}) => addActivityIndicationClassToNavLink(isActive, [false, [true, false]])} data-bs-toggle="dropdown">Features</NavLink>
                                 <div className="dropdown-menu m-0">
-                                    <NavLink to="/" className={({ isActive }) => (isActive ? `${dropDownItemBaseClass} active` : `${dropDownItemBaseClass}`)}>Blog</NavLink>
-                                    <NavLink to="/" className={({ isActive }) => (isActive ? `${dropDownItemBaseClass} active` : `${dropDownItemBaseClass}`)}>Testimonials</NavLink>
+                                    <NavLink to="/" className={({ isActive }) => addActivityIndicationClassToNavLink(isActive, [false, [false, true]])}>Blog</NavLink>
+                                    <NavLink to="/" className={({ isActive }) => addActivityIndicationClassToNavLink(isActive, [false, [false, true]])}>Testimonials</NavLink>
                                 </div>
                             </div>
-                            <NavLink to="/about-us" className={({ isActive }) => (isActive ? `${navLinkBaseClass} active` : `${navLinkBaseClass}`)}>About Us</NavLink>
-                            <NavLink to="/" className={({ isActive }) => (isActive ? `${navLinkBaseClass} active` : `${navLinkBaseClass}`)}>Contact Us</NavLink>
+                            <NavLink to="/about-us" className={({ isActive }) => addActivityIndicationClassToNavLink(isActive, [true, null])}>About Us</NavLink>
+                            <NavLink to="/" className={({ isActive }) => addActivityIndicationClassToNavLink(isActive, [true, null])}>Contact Us</NavLink>
                         </div>
                         <div className="d-none d-lg-flex ms-2">
                             <Link className="btn-sm-square bg-white rounded-circle ms-3" to="/">

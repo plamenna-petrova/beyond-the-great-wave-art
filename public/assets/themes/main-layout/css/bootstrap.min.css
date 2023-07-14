@@ -2844,7 +2844,7 @@ textarea.form-control.is-invalid {
 .btn-check:focus+.btn,
 .btn:focus {
     outline: 0;
-    box-shadow: 0 0 0 .25rem rgba(60, 184, 21, 0.25)
+    box-shadow: #3630c9;
 }
 
 .btn:disabled,
@@ -3227,7 +3227,7 @@ fieldset:disabled .btn {
 
 .btn-check:focus+.btn-outline-primary,
 .btn-outline-primary:focus {
-    box-shadow: 0 0 0 .25rem rgba(60, 184, 21, 0.5)
+    box-shadow: #3630c9;
 }
 
 .btn-check:checked+.btn-outline-primary,
@@ -3245,7 +3245,7 @@ fieldset:disabled .btn {
 .btn-outline-primary:active:focus,
 .btn-outline-primary.active:focus,
 .btn-outline-primary.dropdown-toggle.show:focus {
-    box-shadow: 0 0 0 .25rem rgba(60, 184, 21, 0.5)
+    box-shadow: #3630c9;
 }
 
 .btn-outline-primary:disabled,

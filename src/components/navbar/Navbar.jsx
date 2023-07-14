@@ -18,7 +18,9 @@ const addActivityIndicationClassToNavLink = (isCurrentRouteActive, navigationArg
             return isCurrentRouteActive ? `${dropDownToggleBaseClass} active` : `${dropDownToggleBaseClass}`;
         } else if (!isDropdownToggle && isDropdownItem) {
             return isCurrentRouteActive ? `${dropDownItemBaseClass} active` : `${dropDownItemBaseClass}`;
-        } 
+        } else {
+            return '';
+        }
     }
 }
 
@@ -49,7 +51,7 @@ const Navbar = () => {
                     <div className="collapse navbar-collapse" id="navbarCollapse">
                         <div className="navbar-nav ms-auto p-4 p-lg-0">
                             <NavLink to="/" className={({ isActive }) => addActivityIndicationClassToNavLink(isActive, [true, null])}>Home</NavLink>
-                            <NavLink to="/" className={({ isActive }) => addActivityIndicationClassToNavLink(isActive, [true, null])}>Galleries</NavLink>
+                            <NavLink to="/galleries" className={({ isActive }) => addActivityIndicationClassToNavLink(isActive, [true, null])}>Galleries</NavLink>
                             <div className="nav-item dropdown">
                                 <NavLink to="/" className={({ isActive}) => addActivityIndicationClassToNavLink(isActive, [false, [true, false]])} data-bs-toggle="dropdown">Features</NavLink>
                                 <div className="dropdown-menu m-0">
@@ -58,7 +60,7 @@ const Navbar = () => {
                                 </div>
                             </div>
                             <NavLink to="/about-us" className={({ isActive }) => addActivityIndicationClassToNavLink(isActive, [true, null])}>About Us</NavLink>
-                            <NavLink to="/" className={({ isActive }) => addActivityIndicationClassToNavLink(isActive, [true, null])}>Contact Us</NavLink>
+                            <NavLink to="/contact-us" className={({ isActive }) => addActivityIndicationClassToNavLink(isActive, [true, null])}>Contact Us</NavLink>
                         </div>
                         <div className="d-none d-lg-flex ms-2">
                             <Link className="btn-sm-square bg-white rounded-circle ms-3" to="/">

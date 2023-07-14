@@ -6,9 +6,11 @@ import './App.css';
 import Navbar from './components/navbar/Navbar';
 import Home from "./pages/layout/home/Home";
 import AboutUs from "./pages/layout/about-us/AboutUs";
+import ContactUs from "./pages/layout/contact-us/ContactUs";
 import Footer from "./components/footer/Footer";
 import ScrollToTopButton from "./components/scroll-to-top-button/ScrollToTopButton";
 import NotFoundPage from "./pages/layout/not-found-page/NotFoundPage";
+import Galleries from "./pages/layout/galleries/Galleries";
 
 const routes = [
     {
@@ -16,8 +18,16 @@ const routes = [
         element: <Home />
     },
     {
+        path: '/galleries',
+        element: <Galleries />
+    },
+    {
         path: '/about-us',
         element: <AboutUs />
+    },
+    {
+        path: '/contact-us',
+        element: <ContactUs />
     },
     {
         path: '*',
@@ -36,7 +46,7 @@ const App = () => {
                     ))
                 }
             </Routes>
-            <Footer />  
+            <Footer />
             <ScrollToTopButton />
         </div>
     );

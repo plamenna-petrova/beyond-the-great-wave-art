@@ -26,34 +26,35 @@ const Home = () => {
     const [latestBlogPostsForSelection, setLatestBlogPostsForSelection] = useState([]);
 
     useEffect(() => {
-        const loadSectionImagesAsync = async () => {
+        const loadHomePageDataAsync = async () => {
             setIsLoaded(false);
-            await getSectionsImages().then(async (images) => {
-                setSectionsImages(images);
-                await getTestimonialsDataForCarousel().then(async (data) => {
-                    setTestimonialsDataForCarousel(data);
-                    await fillGalleriesSelectionWithSampleData(images).then(async (galleries) => {
-                        setGalleriesForSelection(galleries);
-                        await fillBlogPostsSelectionWithSampleData(images).then(async (blogPosts) => {
-                            setLatestBlogPostsForSelection(blogPosts);
+            setTimeout(async () => {
+                await getSectionsImages().then(async (images) => {
+                    setSectionsImages(images);
+                    await getTestimonialsDataForCarousel().then(async (data) => {
+                        setTestimonialsDataForCarousel(data);
+                        await fillGalleriesSelectionWithSampleData(images).then(async (galleries) => {
+                            setGalleriesForSelection(galleries);
+                            await fillBlogPostsSelectionWithSampleData(images).then(async (blogPosts) => {
+                                setLatestBlogPostsForSelection(blogPosts);
+                            }).catch((error) => {
+                                throw error;
+                            });
                         }).catch((error) => {
                             throw error;
                         });
+                        setIsLoaded(true);
                     }).catch((error) => {
                         throw error;
                     });
-                    setIsLoaded(true);
                 }).catch((error) => {
-                    throw error;
+                    setIsLoaded(false);
+                }).finally(() => {
+                    setIsLoaded(true);
                 });
-            }).catch((error) => {
-                setIsLoaded(false);
-            });
+            }, 2000);
         }
-        loadSectionImagesAsync().then(() => {
-            setIsLoaded(true);
-            console.log('set to false');
-        });
+        loadHomePageDataAsync();
     }, []);
 
     return (

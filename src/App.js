@@ -11,6 +11,8 @@ import Footer from "./components/footer/Footer";
 import ScrollToTopButton from "./components/scroll-to-top-button/ScrollToTopButton";
 import NotFoundPage from "./pages/layout/not-found-page/NotFoundPage";
 import Galleries from "./pages/layout/galleries/Galleries";
+import Blog from "./pages/layout/blog/Blog";
+import CustomerReviews from "./pages/layout/components/customer-reviews/CustomerReviews";
 
 const routes = [
     {
@@ -28,6 +30,14 @@ const routes = [
     {
         path: '/contact-us',
         element: <ContactUs />
+    },
+    {
+        path: '/blog',
+        element: <Blog />
+    },
+    {
+        path: '/testimonials',
+        element: <CustomerReviews />
     },
     {
         path: '*',

@@ -1,7 +1,7 @@
 
 import './NotFoundPage.css';
 
-const NotFoundPage = () => {
+export default function NotFoundPage() {
     return (
         <div className="not-found-page-wrapper">
             <div className="container-fluid page-header wow fadeIn" data-wow-delay="0.1s">
@@ -17,7 +17,7 @@ const NotFoundPage = () => {
                             <h1 className="display-1">404</h1>
                             <h1 className="mb-4">Page Not Found</h1>
                             <p className="mb-4">We’re sorry, the page you have looked for does not exist in our website! Maybe go to our home page or try to use a search?</p>
-                            <a className="btn btn-primary rounded-pill py-3 px-5" href="">Go Back To Home</a>
+                            <a className="btn btn-primary rounded-pill py-3 px-5" href="/">Go Back To Home</a>
                         </div>
                     </div>
                 </div>
@@ -25,5 +25,3 @@ const NotFoundPage = () => {
         </div>
     )
 }
-
-export default NotFoundPage;

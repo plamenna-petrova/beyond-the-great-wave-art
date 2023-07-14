@@ -3,7 +3,7 @@ import SecondaryPageMastheadHeader from '../components/seconday-page-masthead-he
 
 import './ContactUs.css';
 
-export const ContactUs = () => {
+export default function ContactUs() {
     return (
         <div className="contact-us-wrapper">
             <SecondaryPageMastheadHeader title="Contact Us" />
@@ -24,10 +24,10 @@ export const ContactUs = () => {
                                 <p className="mb-5"><i className="fa fa-map-marker-alt me-3"></i>123 Street, New York, USA</p>
                                 <h5 className="text-white">Follow Us</h5>
                                 <div className="d-flex pt-2">
-                                    <a className="btn btn-square btn-outline-light rounded-circle me-1" href=""><i className="fab fa-twitter"></i></a>
-                                    <a className="btn btn-square btn-outline-light rounded-circle me-1" href=""><i className="fab fa-facebook-f"></i></a>
-                                    <a className="btn btn-square btn-outline-light rounded-circle me-1" href=""><i className="fab fa-youtube"></i></a>
-                                    <a className="btn btn-square btn-outline-light rounded-circle me-0" href=""><i className="fab fa-linkedin-in"></i></a>
+                                    <a className="btn btn-square btn-outline-light rounded-circle me-1" href="/"><i className="fab fa-twitter"></i></a>
+                                    <a className="btn btn-square btn-outline-light rounded-circle me-1" href="/"><i className="fab fa-facebook-f"></i></a>
+                                    <a className="btn btn-square btn-outline-light rounded-circle me-1" href="/"><i className="fab fa-youtube"></i></a>
+                                    <a className="btn btn-square btn-outline-light rounded-circle me-0" href="/"><i className="fab fa-linkedin-in"></i></a>
                                 </div>
                             </div>
                         </div>
@@ -68,11 +68,9 @@ export const ContactUs = () => {
                     </div>
                 </div>
             </div>
-            <div class="container-xxl px-0 wow fadeIn" data-wow-delay="0.1s" style={{ marginBottom: -6 + 'px' }}>
-                <iframe class="w-100" style={{ height: 450 + 'px' }} src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2483.2313665713655!2d-0.1312353842299507!3d51.508971179635424!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487604ce176ac979%3A0xb3ac7bd29af84262!2sNational%20Portrait%20Gallery!5e0!3m2!1sbg!2sbg!4v1689279805367!5m2!1sbg!2sbg" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+            <div className="container-xxl px-0 wow fadeIn" data-wow-delay="0.1s" style={{ marginBottom: -6 + 'px' }}>
+                <iframe className="w-100" title="google maps pinpointed location" style={{ height: 450 + 'px' }} src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2483.2313665713655!2d-0.1312353842299507!3d51.508971179635424!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x487604ce176ac979%3A0xb3ac7bd29af84262!2sNational%20Portrait%20Gallery!5e0!3m2!1sbg!2sbg!4v1689279805367!5m2!1sbg!2sbg" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
             </div>
         </div>
     )
 }
-
-export default ContactUs;

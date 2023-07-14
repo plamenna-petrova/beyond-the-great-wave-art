@@ -24,7 +24,7 @@ const addActivityIndicationClassToNavLink = (isCurrentRouteActive, navigationArg
     }
 }
 
-const Navbar = () => {
+export default function Navbar() {
     return (
         <div className="navbar-wrapper">
             <div className="container-fluid fixed-top px-0 wow fadeIn" data-wow-delay="0.1s">
@@ -41,7 +41,6 @@ const Navbar = () => {
                         <Link className="text-body ms-3" to="/"><i className="fab fa-instagram"></i></Link>
                     </div>
                 </div>
-
                 <nav className="navbar navbar-expand-lg navbar-light py-lg-0 px-lg-5 wow fadeIn" data-wow-delay="0.1s">
                     <Link to="/" className="navbar-brand ms-4 ms-lg-0">
                     </Link>
@@ -53,10 +52,10 @@ const Navbar = () => {
                             <NavLink to="/" className={({ isActive }) => addActivityIndicationClassToNavLink(isActive, [true, null])}>Home</NavLink>
                             <NavLink to="/galleries" className={({ isActive }) => addActivityIndicationClassToNavLink(isActive, [true, null])}>Galleries</NavLink>
                             <div className="nav-item dropdown">
-                                <NavLink to="/" className={({ isActive}) => addActivityIndicationClassToNavLink(isActive, [false, [true, false]])} data-bs-toggle="dropdown">Features</NavLink>
+                                <NavLink to="/" className={() => addActivityIndicationClassToNavLink(false, [false, [true, false]])} data-bs-toggle="dropdown">Features</NavLink>
                                 <div className="dropdown-menu m-0">
-                                    <NavLink to="/" className={({ isActive }) => addActivityIndicationClassToNavLink(isActive, [false, [false, true]])}>Blog</NavLink>
-                                    <NavLink to="/" className={({ isActive }) => addActivityIndicationClassToNavLink(isActive, [false, [false, true]])}>Testimonials</NavLink>
+                                    <NavLink to="/blog" className={({ isActive }) => addActivityIndicationClassToNavLink(isActive, [false, [false, true]])}>Blog</NavLink>
+                                    <NavLink to="/testimonials" className={({ isActive }) => addActivityIndicationClassToNavLink(isActive, [false, [false, true]])}>Testimonials</NavLink>
                                 </div>
                             </div>
                             <NavLink to="/about-us" className={({ isActive }) => addActivityIndicationClassToNavLink(isActive, [true, null])}>About Us</NavLink>
@@ -79,5 +78,3 @@ const Navbar = () => {
         </div>
     )
 }
-
-export default Navbar;

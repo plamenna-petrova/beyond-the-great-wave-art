@@ -1,8 +1,5 @@
 
-import { Link } from "react-router-dom";
-
-import firstHomePageCarouselImage from '../../../resources/images/press-release-rm-32.jpg';
-import secondHomePageCarouselImage from '../../../resources/images/press-release-rm-32.jpg';
+import Spinner from '../../../components/spinner/Spinner';
 
 import SecondaryPageMastheadHeader from "../components/seconday-page-masthead-header/SecondayPageMastheadHeader";
 import Introduction from "../components/introduction/Introduction";
@@ -10,27 +7,38 @@ import Invitation from "../components/invitation/Invitation";
 import Features from "../components/features/Features";
 
 import './AboutUs.css';
+import { useEffect } from 'react';
+import { getSectionsImages } from '../../../helpers/functions';
+import { useState } from 'react';
 
-const sectionsImages = [
-  {
-      relativePath: firstHomePageCarouselImage,
-      alt: 'First Home Page Carousel Resource'
-  },
-  {
-      relativePath: secondHomePageCarouselImage,
-      alt: 'Second Home Page Carousel Resource'
-  }
-];
+export default function AboutUs() {
+  const [isAboutUsPageDataLoaded, setIsAboutUsPageDataLoaded] = useState(false);
+  const [sectionsImages, setSectionsImages] = useState([]);
 
-const AboutUs = () => {
+  useEffect(() => {
+    const loadAboutUsDataAsync = async () => {
+      await getSectionsImages().then((images) => {
+        setSectionsImages(images);
+        setIsAboutUsPageDataLoaded(true);
+      }).catch((error) => {
+        console.log('error', error);
+        setIsAboutUsPageDataLoaded(false);
+      });
+    };
+    loadAboutUsDataAsync();
+  });
+
   return (
     <div className="about-us-wrapper">
-      <SecondaryPageMastheadHeader title="About Us" />
-      <Introduction aboutImage={sectionsImages[0]} />
-      <Invitation />
-      <Features featuresImages={sectionsImages} />
+      {!isAboutUsPageDataLoaded && <Spinner />}
+      {isAboutUsPageDataLoaded && (
+        <>
+          <SecondaryPageMastheadHeader title="About Us" />
+          <Introduction introductionImage={sectionsImages[0]} />
+          <Invitation />
+          <Features featuresImages={sectionsImages} />
+        </>
+      )}
     </div>
   );
 }
-
-export default AboutUs;

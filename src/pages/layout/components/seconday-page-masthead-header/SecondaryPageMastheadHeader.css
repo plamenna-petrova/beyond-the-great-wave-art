@@ -1,5 +1,6 @@
 .page-header {
     background: url(../../../../resources/images/press-release-rm-32.jpg) top right no-repeat;
+    background-size: cover !important;
 }
 
 .secondary-page-masthead-header-heading {

@@ -1,69 +1,52 @@
 
 import { useEffect, useState } from 'react';
 
-import firstHomePageCarouselImage from '../../../resources/images/press-release-rm-32.jpg';
-import secondHomePageCarouselImage from '../../../resources/images/press-release-rm-32.jpg';
-
 import SecondaryPageMastheadHeader from '../components/seconday-page-masthead-header/SecondayPageMastheadHeader';
 import GalleriesSelection from "../components/galleries-selection/GalleriesSelection";
 import Invitation from '../components/invitation/Invitation';
 import Testimonials from '../components/testimonials/Testimonials';
 
-import { fillGalleriesSelectionWithSampleData  } from '../../../helpers/functions';
+import { fillGalleriesSelectionWithSampleData, getSectionsImages, getTestimonialsDataForCarousel } from '../../../helpers/functions';
+import Spinner from '../../../components/spinner/Spinner';
 
-const sectionsImages = [
-    {
-        relativePath: firstHomePageCarouselImage,
-        alt: 'First Home Page Carousel Resource'
-    },
-    {
-        relativePath: secondHomePageCarouselImage,
-        alt: 'Second Home Page Carousel Resource'
-    }
-];
-
-const testimonialsDataForCarousel = [
-    {
-        id: '1',
-        imageSrc: firstHomePageCarouselImage,
-        imageAlt: 'Gallery Testimonial 1',
-        textContent: 'Gallery Review From User 1'
-    },
-    {
-        id: '2',
-        imageSrc: firstHomePageCarouselImage,
-        imageAlt: 'Gallery Testimonial 2',
-        textContent: 'Gallery Review From User 2'
-    },
-    {
-        id: '3',
-        imageSrc: firstHomePageCarouselImage,
-        imageAlt: 'Gallery Testimonial 3',
-        textContent: 'Gallery Review From User 3'
-    },
-    {
-        id: '4',
-        imageSrc: firstHomePageCarouselImage,
-        imageAlt: 'Gallery Testimonial 4',
-        textContent: 'Gallery Review From User 4'
-    },
-];
-
-const Galleries = () => {
+export default function Galleries() {
+    const [isGalleriesDataLoaded, setIsGalleriesDataLoaded] = useState(false);
+    const [testimonialsDataForCarousel, setTestimonialsDataForCarousel] = useState([]);
     const [galleriesForSelection, setGalleriesForSelection] = useState([]);
 
     useEffect(() => {
-        setGalleriesForSelection(fillGalleriesSelectionWithSampleData(sectionsImages));
+        const loadGalleriesPageDataAsync = async () => {
+            await getSectionsImages().then(async (images) => {
+                await getTestimonialsDataForCarousel().then(async (data) => {
+                    setTestimonialsDataForCarousel(data);
+                    await fillGalleriesSelectionWithSampleData(images).then((galleries) => {
+                        setGalleriesForSelection(galleries);
+                        setIsGalleriesDataLoaded(true);
+                    }).catch((error) => {
+                        throw error;
+                    });
+                }).catch((error) => {
+                    throw error;
+                })
+            }).catch((error) => {
+                console.log('error', error);
+                setIsGalleriesDataLoaded(false);
+            });
+        }
+        loadGalleriesPageDataAsync();
     }, []);
 
     return (
         <div className="galleries-wrapper">
-            <SecondaryPageMastheadHeader title="Galleries" />
-            <GalleriesSelection galleriesForSelection={galleriesForSelection} />
-            <Invitation />
-            <Testimonials testimonialsDataForCarousel={testimonialsDataForCarousel} />
+            {!isGalleriesDataLoaded && <Spinner />}
+            {isGalleriesDataLoaded && (
+                <>
+                    <SecondaryPageMastheadHeader title="Galleries" />
+                    <GalleriesSelection galleriesForSelection={galleriesForSelection} />
+                    <Invitation />
+                    <Testimonials testimonialsDataForCarousel={testimonialsDataForCarousel} />
+                </>
+            )}
         </div>
     )
 }
-
-export default Galleries;

@@ -25,16 +25,20 @@ export default function Home() {
     const [galleriesForSelection, setGalleriesForSelection] = useState([]);
     const [latestBlogPostsForSelection, setLatestBlogPostsForSelection] = useState([]);
 
-    const loadHomePageDataAsync = useCallback(async () => {
-        await getSectionsImages().then(async (images) => {
-            setSectionsImages(images);
-            await getTestimonialsDataForCarousel().then(async (data) => {
-                setTestimonialsDataForCarousel(data);
-                await fillGalleriesSelectionWithSampleData(images).then(async (galleries) => {
-                    setGalleriesForSelection(galleries);
-                    await fillBlogPostsSelectionWithSampleData(images).then(async (blogPosts) => {
-                        setLatestBlogPostsForSelection(blogPosts);
-                        setIsHomePageDataLoaded(true);
+    useEffect(() => {
+        const loadHomePageDataAsync = async () => {
+            await getSectionsImages().then(async (images) => {
+                setSectionsImages(images);
+                await getTestimonialsDataForCarousel().then(async (data) => {
+                    setTestimonialsDataForCarousel(data);
+                    await fillGalleriesSelectionWithSampleData(images).then(async (galleries) => {
+                        setGalleriesForSelection(galleries);
+                        await fillBlogPostsSelectionWithSampleData(images).then(async (blogPosts) => {
+                            setLatestBlogPostsForSelection(blogPosts);
+                            setIsHomePageDataLoaded(true);
+                        }).catch((error) => {
+                            throw error;
+                        });
                     }).catch((error) => {
                         throw error;
                     });
@@ -42,18 +46,12 @@ export default function Home() {
                     throw error;
                 });
             }).catch((error) => {
-                throw error;
+                console.log('error', error);
+                setIsHomePageDataLoaded(false);
             });
-        }).catch((error) => {
-            console.log('error', error);
-            setIsHomePageDataLoaded(false);
-        });
+        }
+        loadHomePageDataAsync();
     }, []);
-
-    useEffect(() => {
-        loadHomePageDataAsync()
-            .catch((error) => console.log('error', error));
-    }, [loadHomePageDataAsync]);
 
     return (
         <div className="home-wrapper">

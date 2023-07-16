@@ -65,9 +65,9 @@ export default function Navbar() {
                             <Link className="btn-sm-square bg-white rounded-circle ms-3" to="/">
                                 <small className="fa fa-search text-body"></small>
                             </Link>
-                            <Link className="btn-sm-square bg-white rounded-circle ms-3" to="/">
+                            <NavLink className="btn-sm-square bg-white rounded-circle ms-3" to="/register">
                                 <small className="fa fa-user text-body"></small>
-                            </Link>
+                            </NavLink>
                             <Link className="btn-sm-square bg-white rounded-circle ms-3" to="/">
                                 <small className="fa fa-shopping-bag text-body"></small>
                             </Link>

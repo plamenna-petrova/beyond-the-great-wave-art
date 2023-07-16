@@ -79,7 +79,7 @@ const getImageDataUrl = async(relativePath) => {
     const readImagePromise = new Promise((resolve, reject) => {
         fileReader.onload = resolve;
         fileReader.onerror = reject;
-        resolve(fileReader.readAsDataURL(imageBlob));
+        fileReader.readAsDataURL(imageBlob);
     });
 
     await readImagePromise;

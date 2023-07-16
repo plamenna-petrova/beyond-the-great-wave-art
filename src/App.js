@@ -1,4 +1,3 @@
-
 import { Routes, Route } from "react-router-dom";
 
 import './App.css';
@@ -13,6 +12,7 @@ import NotFoundPage from "./pages/layout/not-found-page/NotFoundPage";
 import Galleries from "./pages/layout/galleries/Galleries";
 import Blog from "./pages/layout/blog/Blog";
 import CustomerReviews from "./pages/layout/components/customer-reviews/CustomerReviews";
+import Register from "./pages/auth/register/Register";
 
 const routes = [
     {
@@ -38,6 +38,10 @@ const routes = [
     {
         path: '/testimonials',
         element: <CustomerReviews />
+    },
+    {
+        path: '/register',
+        element: <Register />
     },
     {
         path: '*',

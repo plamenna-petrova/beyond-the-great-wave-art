@@ -1,5 +1,5 @@
 
-import { Link } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 
 export default function Footer() {
     return (
@@ -25,8 +25,8 @@ export default function Footer() {
                         </div>
                         <div className="col-lg-3 col-md-6">
                             <h4 className="text-light mb-4">Quick Links</h4>
-                            <Link to="/" className="btn btn-link">About Us</Link>
-                            <Link to="/" className="btn btn-link">Contact Us</Link>
+                            <NavLink to="/about-us" className="btn btn-link">About Us</NavLink>
+                            <NavLink to="/contact-us" className="btn btn-link">Contact Us</NavLink>
                             <Link to="/" className="btn btn-link">Our Services</Link>
                             <Link to="/" className="btn btn-link">Terms & Condition</Link>
                             <Link to="/" className="btn btn-link">Support</Link>

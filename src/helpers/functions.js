@@ -1,55 +1,39 @@
 import firstHomePageCarouselImage from '../resources/images/press-release-rm-32.jpg';
 import secondHomePageCarouselImage from '../resources/images/press-release-rm-32.jpg';
 
-const getSectionsImages = async () => {
-    const sectionsImages =
-        [
-            {
-                dataUrl: await getImageDataUrlFromdataUrl(firstHomePageCarouselImage),
-                alt: 'First Home Page Carousel Resource'
-            },
-            {
-                dataUrl: await getImageDataUrlFromdataUrl(secondHomePageCarouselImage),
-                alt: 'Second Home Page Carousel Resource'
-            }
-        ];
+const getSectionsImages = async() => {
+    const sectionsImages = [];
+
+    for (let i = 0; i < 2; i++) {
+        await getImageDataUrl(firstHomePageCarouselImage).then((dataUrl) => {
+            sectionsImages.push({
+                dataUrl: dataUrl,
+                alt: `Carousel Resource #${i + 1}`
+            });
+        });
+    }
 
     return sectionsImages;
 }
 
-const getTestimonialsDataForCarousel = async () => {
-    const testimonialsDataForCarousel =
-        [
-            {
-                id: '1',
-                imageSrc: await getImageDataUrlFromdataUrl(firstHomePageCarouselImage),
-                imageAlt: 'Gallery Testimonial 1',
-                textContent: 'Gallery Review From User 1'
-            },
-            {
-                id: '2',
-                imageSrc: await getImageDataUrlFromdataUrl(firstHomePageCarouselImage),
-                imageAlt: 'Gallery Testimonial 2',
-                textContent: 'Gallery Review From User 2'
-            },
-            {
-                id: '3',
-                imageSrc: await getImageDataUrlFromdataUrl(firstHomePageCarouselImage),
-                imageAlt: 'Gallery Testimonial 3',
-                textContent: 'Gallery Review From User 3'
-            },
-            {
-                id: '4',
-                imageSrc: await getImageDataUrlFromdataUrl(firstHomePageCarouselImage),
-                imageAlt: 'Gallery Testimonial 4',
-                textContent: 'Gallery Review From User 4'
-            },
-        ];
+const getTestimonialsDataForCarousel = async() => {
+    const testimonialsDataForCarousel = [];
+
+    for (let i = 0; i < 4; i++) {
+        await getImageDataUrl(firstHomePageCarouselImage).then((dataUrl) => {
+            testimonialsDataForCarousel.push({
+                id: i + 1,
+                imageSrc: dataUrl,
+                imageAlt: `Gallery Testimonial ${i + 1}`,
+                textContent: `Gallery Review From User ${i + 1}`
+            });
+        });
+    }
 
     return testimonialsDataForCarousel;
 }
 
-const fillGalleriesSelectionWithSampleData = async (sampleImages) => {
+const fillGalleriesSelectionWithSampleData = async(sampleImages) => {
     const sampleGalleries = [];
 
     for (let i = 0; i < 24; i++) {
@@ -67,7 +51,7 @@ const fillGalleriesSelectionWithSampleData = async (sampleImages) => {
     return sampleGalleries;
 }
 
-const fillBlogPostsSelectionWithSampleData = async (sampleImages) => {
+const fillBlogPostsSelectionWithSampleData = async(sampleImages) => {
     const sampleBlogPostsForSelection = [];
 
     for (let i = 0; i < 3; i++) {
@@ -87,21 +71,23 @@ const fillBlogPostsSelectionWithSampleData = async (sampleImages) => {
     return sampleBlogPostsForSelection;
 }
 
-const getImageDataUrlFromdataUrl = async (imagedataUrl) => {
-    const imageBlob = await toBlob(imagedataUrl);
+const getImageDataUrl = async(relativePath) => {
+    const imageBlob = await toBlob(relativePath);
 
     const fileReader = new FileReader();
 
-    await new Promise((resolve, reject) => {
+    const readImagePromise = new Promise((resolve, reject) => {
         fileReader.onload = resolve;
         fileReader.onerror = reject;
-        fileReader.readAsDataURL(imageBlob);
+        resolve(fileReader.readAsDataURL(imageBlob));
     });
+
+    await readImagePromise;
 
     return fileReader.result;
 }
 
-const toBlob = async (url) => {
+const toBlob = async(url) => {
     const response = await fetch(url);
     return await response.blob();
 }

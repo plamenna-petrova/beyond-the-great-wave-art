@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 import Spinner from '../../../components/spinner/Spinner';
 
@@ -25,20 +25,16 @@ export default function Home() {
     const [galleriesForSelection, setGalleriesForSelection] = useState([]);
     const [latestBlogPostsForSelection, setLatestBlogPostsForSelection] = useState([]);
 
-    useEffect(() => {
-        const loadHomePageDataAsync = async () => {
-            await getSectionsImages().then(async (images) => {
-                setSectionsImages(images);
-                await getTestimonialsDataForCarousel().then(async (data) => {
-                    setTestimonialsDataForCarousel(data);
-                    await fillGalleriesSelectionWithSampleData(images).then(async (galleries) => {
-                        setGalleriesForSelection(galleries);
-                        await fillBlogPostsSelectionWithSampleData(images).then(async (blogPosts) => {
-                            setLatestBlogPostsForSelection(blogPosts);
-                            setIsHomePageDataLoaded(true);
-                        }).catch((error) => {
-                            throw error;
-                        });
+    const loadHomePageDataAsync = useCallback(async () => {
+        await getSectionsImages().then(async (images) => {
+            setSectionsImages(images);
+            await getTestimonialsDataForCarousel().then(async (data) => {
+                setTestimonialsDataForCarousel(data);
+                await fillGalleriesSelectionWithSampleData(images).then(async (galleries) => {
+                    setGalleriesForSelection(galleries);
+                    await fillBlogPostsSelectionWithSampleData(images).then(async (blogPosts) => {
+                        setLatestBlogPostsForSelection(blogPosts);
+                        setIsHomePageDataLoaded(true);
                     }).catch((error) => {
                         throw error;
                     });
@@ -46,12 +42,18 @@ export default function Home() {
                     throw error;
                 });
             }).catch((error) => {
-                console.log('error', error);
-                setIsHomePageDataLoaded(false);
+                throw error;
             });
-        }
-        loadHomePageDataAsync();
+        }).catch((error) => {
+            console.log('error', error);
+            setIsHomePageDataLoaded(false);
+        });
     }, []);
+
+    useEffect(() => {
+        loadHomePageDataAsync()
+            .catch((error) => console.log('error', error));
+    }, [loadHomePageDataAsync]);
 
     return (
         <div className="home-wrapper">

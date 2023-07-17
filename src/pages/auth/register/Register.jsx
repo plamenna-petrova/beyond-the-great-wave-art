@@ -1,12 +1,12 @@
 
-import { Checkbox, Form, Input, Button } from "antd";
+import { Checkbox, Form, Input, Button, Typography } from "antd";
 
 import React, { useEffect } from 'react';
 
 import { useAuthState } from "react-firebase-hooks/auth";
 import { auth } from "../../../firebase";
 import { createUserWithEmailAndPasswordAsync } from "../../../services/auth-service";
-import { useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
 const formItemLayout = {
     labelCol: {
@@ -25,7 +25,7 @@ const formItemLayout = {
             span: 16
         }
     }
-}
+};
 
 const tailFormItemLayout = {
     wrapperCol: {
@@ -46,10 +46,7 @@ export default function Register() {
     const navigate = useNavigate();
 
     const onRegisterFormFinish = (registerFormValues) => {
-        console.log('Received values of form: ', registerFormValues);
         const { username, email, password } = { ...registerFormValues };
-        console.log('destructed');
-        console.log(email, username, password);
         createUserWithEmailAndPasswordAsync(username, email, password);
     }
 
@@ -62,10 +59,12 @@ export default function Register() {
             return;
         }
 
-        if (user) {
-            navigate('/');
+        if (user) {;
+            localStorage.setItem('accessToken', user.accessToken);
+            localStorage.setItem('refreshToken', user.refreshToken);
+            navigate('/login');
         }
-    }, [user, loading]);
+    }, [user, loading, navigate]);
 
     return (
         <div className="register-form-wrapper">
@@ -117,6 +116,18 @@ export default function Register() {
                         {
                             required: true,
                             message: 'Please enter your password!'
+                        },
+                        {
+                            min: 6,
+                            message: 'The password must be at least 6 symbols long'
+                        },
+                        {
+                            max: 16,
+                            message: 'The pasword cannot be longer than 16 symbols'
+                        },
+                        {
+                            pattern: new RegExp(/^(?=.*\d)(?=.*[!@#$%^&/\\[\];',<>{}"+=.*])(?=.*[a-z])(?=.*[A-Z]).{4,}$/),
+                            message: 'The password must include at least one number and one special character'
                         }
                     ]}
                 >
@@ -162,6 +173,14 @@ export default function Register() {
                         I have read the <a href="/">agreement</a>
                     </Checkbox>
                 </Form.Item>
+                <Typography.Title
+                    level={3}
+                    style={{
+                        margin: 0,
+                    }}
+                >
+                    Already have an account? <NavLink to="/login">Login</NavLink>
+                </Typography.Title>
                 <Form.Item {...tailFormItemLayout}>
                     <Button type="primary" htmlType="submit">
                         Register

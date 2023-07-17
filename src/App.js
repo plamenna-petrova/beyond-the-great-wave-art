@@ -13,6 +13,7 @@ import Galleries from "./pages/layout/galleries/Galleries";
 import Blog from "./pages/layout/blog/Blog";
 import CustomerReviews from "./pages/layout/components/customer-reviews/CustomerReviews";
 import Register from "./pages/auth/register/Register";
+import Login from "./pages/auth/login/Login";
 
 const routes = [
     {
@@ -42,6 +43,10 @@ const routes = [
     {
         path: '/register',
         element: <Register />
+    },
+    {
+        path: '/login',
+        element: <Login />
     },
     {
         path: '*',

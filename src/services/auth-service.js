@@ -78,5 +78,6 @@ export {
     signInWithEmailAndPasswordAsync,
     signOutAsync,
     signInWithGoogleAsync,
-    sendPasswordResetLinkToEmailAsync
+    sendPasswordResetLinkToEmailAsync,
+    fogotPassword
 }

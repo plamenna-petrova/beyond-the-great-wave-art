@@ -1,7 +1,12 @@
 
-
-import { Link } from "react-router-dom";
+import { useAuthState } from "react-firebase-hooks/auth";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { NavLink } from "react-router-dom";
+
+import { auth } from "../../firebase";
+import { signOutAsync } from "../../services/auth-service";
+
+import { Button } from "antd";
 
 const navLinkBaseClass = 'nav-item nav-link';
 const dropDownToggleBaseClass = 'nav-link dropdown-toggle';
@@ -25,6 +30,25 @@ const addActivityIndicationClassToNavLink = (isCurrentRouteActive, navigationArg
 }
 
 export default function Navbar() {
+    const [user, loading] = useAuthState(auth);
+
+    const navigate = useNavigate();
+
+    const logout = async () => {
+        if (loading) {
+            return;
+        }
+
+        if (user) {
+            await signOutAsync().then(() => {
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                console.log('navigated to home page');
+                navigate('/');
+            });
+        }
+    }
+
     return (
         <div className="navbar-wrapper">
             <div className="container-fluid fixed-top px-0 wow fadeIn" data-wow-delay="0.1s">
@@ -62,16 +86,19 @@ export default function Navbar() {
                             <NavLink to="/contact-us" className={({ isActive }) => addActivityIndicationClassToNavLink(isActive, [true, null])}>Contact Us</NavLink>
                         </div>
                         <div className="d-none d-lg-flex ms-2">
-                            <Link className="btn-sm-square bg-white rounded-circle ms-3" to="/">
+                            <NavLink className="btn-sm-square bg-white rounded-circle ms-3" to="/">
                                 <small className="fa fa-search text-body"></small>
-                            </Link>
+                            </NavLink>
                             <NavLink className="btn-sm-square bg-white rounded-circle ms-3" to="/register">
                                 <small className="fa fa-user text-body"></small>
                             </NavLink>
-                            <Link className="btn-sm-square bg-white rounded-circle ms-3" to="/">
+                            <NavLink className="btn-sm-square bg-white rounded-circle ms-3" to="/">
                                 <small className="fa fa-shopping-bag text-body"></small>
-                            </Link>
+                            </NavLink>
                         </div>
+                        {
+                            user && <Button type="primary" onClick={logout}>Logout</Button> 
+                        }
                     </div>
                 </nav>
             </div>

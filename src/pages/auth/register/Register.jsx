@@ -3,10 +3,14 @@ import { Checkbox, Form, Input, Button, Typography } from "antd";
 
 import React, { useEffect } from 'react';
 
-import { useAuthState } from "react-firebase-hooks/auth";
-import { auth } from "../../../firebase";
 import { createUserWithEmailAndPasswordAsync } from "../../../services/auth-service";
 import { NavLink, useNavigate } from "react-router-dom";
+
+import { addNewRecordToFirestoreAsync } from "../../../helpers/firebase-helper";
+import { getAdditionalUserInfo } from "firebase/auth";
+
+import { useSelector, useDispatch } from 'react-redux';
+import { authenticateUser } from "../../../store/features/auth/authSlice";
 
 const formItemLayout = {
     labelCol: {
@@ -42,12 +46,45 @@ const tailFormItemLayout = {
 
 export default function Register() {
     const [registerForm] = Form.useForm();
-    const [user, loading] = useAuthState(auth);
+    const currentUser = useSelector((state) => state.auth.currentUser);
+
+    const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const onRegisterFormFinish = (registerFormValues) => {
-        const { username, email, password } = { ...registerFormValues };
-        createUserWithEmailAndPasswordAsync(username, email, password);
+    const onRegisterFormFinish = async (registerFormValues) => {
+        try {
+            const { username, email, password } = { ...registerFormValues };
+
+            const createdUserWithEmailAndPasswordCredentials = await createUserWithEmailAndPasswordAsync(
+                email, password
+            );
+
+            const { user } = createdUserWithEmailAndPasswordCredentials;
+    
+            const userToSave = {
+                uid: user.uid,
+                username,
+                authProvider: "local",
+                email
+            };
+    
+            await addNewRecordToFirestoreAsync("users", userToSave).then(() => {
+                const { authProvider, ...userDetails } = userToSave;
+    
+                dispatch(authenticateUser({
+                    currentUser: {
+                        ...userDetails,
+                        isNewUser: getAdditionalUserInfo(createdUserWithEmailAndPasswordCredentials).isNewUser,
+                        accessToken: user.accessToken,
+                        refreshToken: user.refreshToken
+                    }
+                }));
+    
+                navigate('/login');
+            });
+        } catch(error) {
+            console.log('error', error);
+        }
     }
 
     const onRegisterFormFinishFailed = (error) => {
@@ -55,16 +92,11 @@ export default function Register() {
     }
 
     useEffect(() => {
-        if (loading) {
-            return;
-        }
-
-        if (user) {;
-            localStorage.setItem('accessToken', user.accessToken);
-            localStorage.setItem('refreshToken', user.refreshToken);
+        if (currentUser) {;
             navigate('/login');
         }
-    }, [user, loading, navigate]);
+        
+    }, [currentUser, navigate]);
 
     return (
         <div className="register-form-wrapper">
@@ -127,7 +159,8 @@ export default function Register() {
                         },
                         {
                             pattern: new RegExp(/^(?=.*\d)(?=.*[!@#$%^&/\\[\];',<>{}"+=.*])(?=.*[a-z])(?=.*[A-Z]).{4,}$/),
-                            message: 'The password must include at least one number and one special character'
+                            message: 'The password must include at least one number, one uppercase character ' +
+                                'and one special character'
                         }
                     ]}
                 >
@@ -149,7 +182,7 @@ export default function Register() {
                                     return Promise.resolve();
                                 }
                                 return Promise.reject(
-                                    new Error('The password and confirmation password do not match!')
+                                    new Error('The password and the confirmation password do not match!')
                                 );
                             }
                         })

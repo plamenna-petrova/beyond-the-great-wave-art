@@ -54,7 +54,7 @@ const routes = [
     }
 ]
 
-const App = () => {
+export default function App() {
     return (
         <div className="App">
             <Navbar />
@@ -70,5 +70,3 @@ const App = () => {
         </div>
     );
 }
-
-export default App;

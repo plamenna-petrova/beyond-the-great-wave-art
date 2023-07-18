@@ -1,12 +1,17 @@
 
-import { useAuthState } from "react-firebase-hooks/auth";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { NavLink } from "react-router-dom";
 
-import { auth } from "../../firebase";
+import { useSelector, useDispatch } from 'react-redux';
+
 import { signOutAsync } from "../../services/auth-service";
 
 import { Button } from "antd";
+import { authenticateUser } from "../../store/features/auth/authSlice";
+import { auth } from "../../firebase";
+
+import { useAuthState } from "react-firebase-hooks/auth";
+import { useEffect } from "react";
 
 const navLinkBaseClass = 'nav-item nav-link';
 const dropDownToggleBaseClass = 'nav-link dropdown-toggle';
@@ -30,24 +35,24 @@ const addActivityIndicationClassToNavLink = (isCurrentRouteActive, navigationArg
 }
 
 export default function Navbar() {
-    const [user, loading] = useAuthState(auth);
+    const currentUser = useSelector((state) => state.auth.currentUser);
 
+    const firebaseAuthState = useAuthState(auth);
+
+    const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const logout = async () => {
-        if (loading) {
-            return;
-        }
-
-        if (user) {
-            await signOutAsync().then(() => {
-                localStorage.removeItem('accessToken');
-                localStorage.removeItem('refreshToken');
-                console.log('navigated to home page');
-                navigate('/');
-            });
-        }
+        await signOutAsync().then(() => {
+            dispatch(authenticateUser({ currentUser: null }))
+            navigate('/');
+        });
     }
+
+    useEffect(() => {
+        console.log('current firebase auth state');
+        console.log(firebaseAuthState);
+    }, [firebaseAuthState]);
 
     return (
         <div className="navbar-wrapper">
@@ -97,7 +102,7 @@ export default function Navbar() {
                             </NavLink>
                         </div>
                         {
-                            user && <Button type="primary" onClick={logout}>Logout</Button> 
+                            currentUser && <Button type="primary" onClick={logout}>Logout</Button>
                         }
                     </div>
                 </nav>

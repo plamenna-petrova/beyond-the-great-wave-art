@@ -2,10 +2,15 @@
 import { Button, Form, Input, Typography } from "antd";
 
 import React, { useEffect } from 'react';
-import { useAuthState } from "react-firebase-hooks/auth";
 import { NavLink, useNavigate } from "react-router-dom";
-import { auth } from "../../../firebase";
 import { signInWithEmailAndPasswordAsync } from "../../../services/auth-service";
+
+import { useSelector, useDispatch } from 'react-redux';
+import { authenticateUser } from "../../../store/features/auth/authSlice";
+import { getAdditionalUserInfo } from "firebase/auth";
+
+import { query, collection, where, getDocs } from "firebase/firestore";
+import { firestore } from "../../../firebase";
 
 const formItemLayout = {
     labelCol: {
@@ -39,12 +44,42 @@ const tailFormItemLayout = {
 
 export default function Login() {
     const [loginForm] = Form.useForm();
-    const [user, loading] = useAuthState(auth);
+    const currentUser = useSelector((state) => state.auth.currentUser);
+
+    const dispatch = useDispatch();
     const navigate = useNavigate();
 
-    const onLoginFormFinish = (loginFormValues) => {
+    const onLoginFormFinish = async (loginFormValues) => {
         const { email, password } = { ...loginFormValues };
-        signInWithEmailAndPasswordAsync(email, password);
+
+        const signedInUserCredentials = await signInWithEmailAndPasswordAsync(
+            email, password
+        );
+
+        const { user: { uid, accessToken, refreshToken } } = signedInUserCredentials;
+
+        const signedInUserQuery = query(collection(firestore, "users"), where("uid", "==", uid));
+        const signedInUserQuerySnapshot = await getDocs(signedInUserQuery);
+        
+        const mapQuerySnapshot = (querySnapshot) => {
+            return querySnapshot.docs.map((doc) => ({ docId: doc.id, ...doc.data() }))
+        }
+
+        const mappedSignedInUserQuerySnapshot = mapQuerySnapshot(signedInUserQuerySnapshot);
+        const username = mappedSignedInUserQuerySnapshot[0].username;
+
+        dispatch(authenticateUser({
+            currentUser: {
+                uid,
+                email,
+                username,
+                isNewUser: getAdditionalUserInfo(signedInUserCredentials).isNewUser,
+                accessToken,
+                refreshToken
+            }
+        }));
+
+        navigate('/');
     }
 
     const onLoginFormFinishFailed = (error) => {
@@ -53,18 +88,14 @@ export default function Login() {
     }
 
     useEffect(() => {
-        if (loading) {
-            return;
-        }
+        if (currentUser) {
+            if (currentUser.isNewUser) {
+                return;
+            }
 
-        if (user) {
-            console.log('user details after login');
-            console.log(user);
-            localStorage.setItem('accessToken', user.accessToken);
-            localStorage.setItem('refreshToken', user.refreshToken);
             navigate('/');
         }
-    }, [user, loading, navigate]);
+    }, [currentUser, navigate]);
 
     return (
         <div className="login-form-wrapper">

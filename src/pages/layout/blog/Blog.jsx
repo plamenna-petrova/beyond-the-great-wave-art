@@ -1,41 +1,49 @@
 import { useEffect } from "react";
 import { useState } from "react";
-import { fillBlogPostsSelectionWithSampleData, getSectionsImages } from "../../../helpers/functions";
 
 import Spinner from "../../../components/spinner/Spinner";
 import LatestBlogPostsSelection from "../components/latest-blog-posts-selection/LatestBlogPostsSelection";
 import SecondaryPageMastheadHeader from "../components/seconday-page-masthead-header/SecondayPageMastheadHeader";
 
+import firstHomePageCarouselImage from '../../../resources/images/press-release-rm-32.jpg';
+import { useDispatch, useSelector } from "react-redux";
+import { setLoadingSpinner } from "../../../store/features/loading/loadingSlice";
+
 export default function Blog() {
-    const [isBlogPageDataLoaded, setIsBlogPageDataLoaded] = useState(false);
+    const dispatch = useDispatch();
+
     const [latestBlogPostsForSelection, setLatestBlogPostsForSelection] = useState([]);
 
     useEffect(() => {
-        const loadBlogPageDataAsync = async () => {
-            await getSectionsImages().then(async (images) => {
-                await fillBlogPostsSelectionWithSampleData(images).then(async (blogPosts) => {
-                    setLatestBlogPostsForSelection(blogPosts);
-                    setIsBlogPageDataLoaded(true);
-                }).catch((error) => {
-                    throw error;
-                });
-            }).catch((error) => {
-                console.log('error', error);
-                setIsBlogPageDataLoaded(false);
-            });
+        dispatch(setLoadingSpinner(true));
+
+        const sampleBlogPostsForSelection = [];
+
+        for (let i = 0; i < 3; i++) {
+            const currentDate = new Date();
+            sampleBlogPostsForSelection.push({
+                id: i + 1,
+                title: 'Blog Post About Modern Gallery',
+                author: 'Admin',
+                createdOn: `${currentDate.getDate()}.${currentDate.getMonth()}.${currentDate.getFullYear()}`,
+                image: {
+                    src: firstHomePageCarouselImage,
+                    alt: 'Modern Gallery Image'
+                }
+            })
         }
-        loadBlogPageDataAsync();
+
+        setLatestBlogPostsForSelection(sampleBlogPostsForSelection);
+
+        setTimeout(() => {
+            dispatch(setLoadingSpinner(false));
+        }, 500);
     }, []);
 
     return (
         <div className="blog-wrapper">
-            {!isBlogPageDataLoaded && <Spinner />}
-            {isBlogPageDataLoaded && (
-                <>
-                    <SecondaryPageMastheadHeader title="Blog" />
-                    <LatestBlogPostsSelection latestBlogPostsForSelection={latestBlogPostsForSelection}/>
-                </>
-            )}
+            <SecondaryPageMastheadHeader title="Blog" />
+            <LatestBlogPostsSelection latestBlogPostsForSelection={latestBlogPostsForSelection} />
         </div>
     )
 }

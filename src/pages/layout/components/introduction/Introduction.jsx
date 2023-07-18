@@ -9,7 +9,7 @@ export default function Introduction({ introductionImage }) {
                     <div className="row g-5 align-items-center">
                         <div className="col-lg-6 wow fadeIn" data-wow-delay="0.1s">
                             <div className="about-img position-relative overflow-hidden p-5 pe-0">
-                                <img className="img-fluid w-100" src={introductionImage.dataUrl} alt={introductionImage.alt} />
+                                <img className="img-fluid w-100" src={introductionImage.src} alt={introductionImage.alt} />
                             </div>
                         </div>
                         <div className="col-lg-6 wow fadeIn" data-wow-delay="0.5s">

@@ -3,14 +3,11 @@ import { Button, Form, Input, Typography } from "antd";
 
 import React, { useEffect } from 'react';
 import { NavLink, useNavigate } from "react-router-dom";
-import { signInWithEmailAndPasswordAsync } from "../../../services/auth-service";
+import { getSignedInUserDetailsFromSnapshot, signInWithEmailAndPasswordAsync } from "../../../services/auth-service";
 
 import { useSelector, useDispatch } from 'react-redux';
 import { authenticateUser } from "../../../store/features/auth/authSlice";
 import { getAdditionalUserInfo } from "firebase/auth";
-
-import { query, collection, where, getDocs } from "firebase/firestore";
-import { firestore } from "../../../firebase";
 
 const formItemLayout = {
     labelCol: {
@@ -44,6 +41,7 @@ const tailFormItemLayout = {
 
 export default function Login() {
     const [loginForm] = Form.useForm();
+
     const currentUser = useSelector((state) => state.auth.currentUser);
 
     const dispatch = useDispatch();
@@ -58,22 +56,16 @@ export default function Login() {
 
         const { user: { uid, accessToken, refreshToken } } = signedInUserCredentials;
 
-        const signedInUserQuery = query(collection(firestore, "users"), where("uid", "==", uid));
-        const signedInUserQuerySnapshot = await getDocs(signedInUserQuery);
-        
-        const mapQuerySnapshot = (querySnapshot) => {
-            return querySnapshot.docs.map((doc) => ({ docId: doc.id, ...doc.data() }))
-        }
-
-        const mappedSignedInUserQuerySnapshot = mapQuerySnapshot(signedInUserQuerySnapshot);
-        const username = mappedSignedInUserQuerySnapshot[0].username;
+        const signedInUserDetails = await getSignedInUserDetailsFromSnapshot(uid);
+        const additionalUserInfo = getAdditionalUserInfo(signedInUserCredentials);
 
         dispatch(authenticateUser({
             currentUser: {
                 uid,
                 email,
-                username,
-                isNewUser: getAdditionalUserInfo(signedInUserCredentials).isNewUser,
+                username: signedInUserDetails.username,
+                authProvider: signedInUserDetails.authProvider,
+                isNewUser: additionalUserInfo.isNewUser,
                 accessToken,
                 refreshToken
             }

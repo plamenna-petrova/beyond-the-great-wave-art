@@ -11,9 +11,12 @@ import ScrollToTopButton from "./components/scroll-to-top-button/ScrollToTopButt
 import NotFoundPage from "./pages/layout/not-found-page/NotFoundPage";
 import Galleries from "./pages/layout/galleries/Galleries";
 import Blog from "./pages/layout/blog/Blog";
-import CustomerReviews from "./pages/layout/components/customer-reviews/CustomerReviews";
+import CustomerReviews from "./pages/layout/customer-reviews/CustomerReviews";
 import Register from "./pages/auth/register/Register";
 import Login from "./pages/auth/login/Login";
+import Spinner from "./components/spinner/Spinner";
+
+import { useSelector } from "react-redux";
 
 const routes = [
     {
@@ -55,8 +58,11 @@ const routes = [
 ]
 
 export default function App() {
+    const isLoadingSpinnerActive = useSelector((state) => state.loading.isLoadingSpinnerActive);
+
     return (
         <div className="App">
+            {isLoadingSpinnerActive && <Spinner />}
             <Navbar />
             <Routes>
                 {

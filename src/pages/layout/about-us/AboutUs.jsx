@@ -6,39 +6,41 @@ import Introduction from "../components/introduction/Introduction";
 import Invitation from "../components/invitation/Invitation";
 import Features from "../components/features/Features";
 
+import firstHomePageCarouselImage from '../../../resources/images/press-release-rm-32.jpg';
+import secondHomePageCarouselImage from '../../../resources/images/press-release-rm-32.jpg';
+
 import './AboutUs.css';
 import { useEffect } from 'react';
-import { getSectionsImages } from '../../../helpers/functions';
-import { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { setLoadingSpinner } from '../../../store/features/loading/loadingSlice';
+
+const sectionsImages = [
+  {
+    src: firstHomePageCarouselImage,
+    alt: 'First Home Page Carousel Resource'
+  },
+  {
+    src: secondHomePageCarouselImage,
+    alt: 'Second Home Page Carousel Resource'
+  }
+];
 
 export default function AboutUs() {
-  const [isAboutUsPageDataLoaded, setIsAboutUsPageDataLoaded] = useState(false);
-  const [sectionsImages, setSectionsImages] = useState([]);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    const loadAboutUsDataAsync = async () => {
-      await getSectionsImages().then((images) => {
-        setSectionsImages(images);
-        setIsAboutUsPageDataLoaded(true);
-      }).catch((error) => {
-        console.log('error', error);
-        setIsAboutUsPageDataLoaded(false);
-      });
-    };
-    loadAboutUsDataAsync();
-  });
+    dispatch(setLoadingSpinner(true));
+    setTimeout(() => {
+      dispatch(setLoadingSpinner(false));
+    }, 500);
+  }, []);
 
   return (
     <div className="about-us-wrapper">
-      {!isAboutUsPageDataLoaded && <Spinner />}
-      {isAboutUsPageDataLoaded && (
-        <>
-          <SecondaryPageMastheadHeader title="About Us" />
-          <Introduction introductionImage={sectionsImages[0]} />
-          <Invitation />
-          <Features featuresImages={sectionsImages} />
-        </>
-      )}
+      <SecondaryPageMastheadHeader title="About Us" />
+      <Introduction introductionImage={sectionsImages[0]} />
+      <Invitation />
+      <Features featuresImages={sectionsImages} />
     </div>
   );
 }

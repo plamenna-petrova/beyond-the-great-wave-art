@@ -10,7 +10,7 @@ export default function MastheadHeader({ mastheadHeaderCarouselImages }) {
                 <div id="header-carousel" className="carousel slide" data-bs-ride="carousel">
                     <div className="carousel-inner">
                         <div className="carousel-item active">
-                            <img className="w-100" src={mastheadHeaderCarouselImages[0].dataUrl} alt={mastheadHeaderCarouselImages[0].alt} />
+                            <img className="w-100" src={mastheadHeaderCarouselImages[0].src} alt={mastheadHeaderCarouselImages[0].alt} />
                             <div className="carousel-caption">
                                 <div className="container">
                                     <div className="row justify-content-start">
@@ -22,7 +22,7 @@ export default function MastheadHeader({ mastheadHeaderCarouselImages }) {
                             </div>
                         </div>
                         <div className="carousel-item">
-                            <img className="w-100" src={mastheadHeaderCarouselImages[1].dataUrl} alt={mastheadHeaderCarouselImages[1].alt} />
+                            <img className="w-100" src={mastheadHeaderCarouselImages[1].src} alt={mastheadHeaderCarouselImages[1].alt} />
                             <div className="carousel-caption">
                                 <div className="container">
                                     <div className="row justify-content-start">

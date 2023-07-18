@@ -10,12 +10,10 @@ export const authSlice = createSlice({
     initialState: authInitialState,
     reducers: {
         authenticateUser: (state, action) => {
-            const userPayload = action.payload;
-            console.log('user paylod');
-            console.log(userPayload);
-            if (userPayload.currentUser) {
-                state.currentUser = userPayload.currentUser;
-                const { accessToken, refreshToken } = userPayload.currentUser;
+            const { currentUser: userToSet } = action.payload;
+            if (userToSet) {
+                state.currentUser = userToSet;
+                const { accessToken, refreshToken } = userToSet;
                 setItemToLocalStorage("accessToken", accessToken);
                 setItemToLocalStorage("refreshToken", refreshToken);
             }

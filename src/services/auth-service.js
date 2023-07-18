@@ -1,7 +1,7 @@
 import { GoogleAuthProvider, createUserWithEmailAndPassword, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup, signOut } from "firebase/auth";
 import { auth, firestore } from "../firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { addNewRecordToFirestoreAsync } from "../helpers/firebase-helper";
+import { addNewRecordToFirestoreAsync, mapQuerySnapshot } from "../helpers/firebase-helper";
 
 const googleProvider = new GoogleAuthProvider();
 
@@ -27,6 +27,16 @@ const signOutAsync = async() => {
     } catch (error) {
         console.log('error', error);
     }
+}
+
+const getSignedInUserDetailsFromSnapshot = async (uid) => {
+    const usersCollectionRefence = collection(firestore, "users");
+    const signedInUserQuery = query(usersCollectionRefence, where("uid", "==", uid));
+    const signedInUserQuerySnapshot = await getDocs(signedInUserQuery);
+    const mappedSignedInUserQuerySnapshot = mapQuerySnapshot(signedInUserQuerySnapshot);
+    const signedInUser = mappedSignedInUserQuerySnapshot[0];
+    const { username, authProvider } = signedInUser;
+    return { username, authProvider };
 }
 
 const signInWithGoogleAsync = async() => {
@@ -78,6 +88,7 @@ export {
     createUserWithEmailAndPasswordAsync,
     signInWithEmailAndPasswordAsync,
     signOutAsync,
+    getSignedInUserDetailsFromSnapshot,
     signInWithGoogleAsync,
     sendPasswordResetLinkToEmailAsync,
     fogotPassword

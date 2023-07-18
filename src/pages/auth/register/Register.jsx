@@ -46,6 +46,7 @@ const tailFormItemLayout = {
 
 export default function Register() {
     const [registerForm] = Form.useForm();
+    
     const currentUser = useSelector((state) => state.auth.currentUser);
 
     const dispatch = useDispatch();
@@ -70,11 +71,13 @@ export default function Register() {
     
             await addNewRecordToFirestoreAsync("users", userToSave).then(() => {
                 const { authProvider, ...userDetails } = userToSave;
+
+                const additionalUserInfo = getAdditionalUserInfo(createdUserWithEmailAndPasswordCredentials);
     
                 dispatch(authenticateUser({
                     currentUser: {
                         ...userDetails,
-                        isNewUser: getAdditionalUserInfo(createdUserWithEmailAndPasswordCredentials).isNewUser,
+                        isNewUser: additionalUserInfo.isNewUser,
                         accessToken: user.accessToken,
                         refreshToken: user.refreshToken
                     }
@@ -144,6 +147,7 @@ export default function Register() {
                 <Form.Item
                     name="password"
                     label="Password"
+                    autoComplete="off"
                     rules={[
                         {
                             required: true,
@@ -169,6 +173,7 @@ export default function Register() {
                 <Form.Item
                     name="confirmPassword"
                     label="Confirm Password"
+                    autoComplete="off"
                     dependencies={['password']}
                     hasFeedback
                     rules={[

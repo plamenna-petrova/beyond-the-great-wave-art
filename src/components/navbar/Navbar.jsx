@@ -4,7 +4,7 @@ import { NavLink } from "react-router-dom";
 
 import { useSelector, useDispatch } from 'react-redux';
 
-import { signOutAsync } from "../../services/auth-service";
+import { getSignedInUserDetailsFromSnapshot, signOutAsync } from "../../services/auth-service";
 
 import { Button } from "antd";
 import { authenticateUser } from "../../store/features/auth/authSlice";
@@ -36,8 +36,7 @@ const addActivityIndicationClassToNavLink = (isCurrentRouteActive, navigationArg
 
 export default function Navbar() {
     const currentUser = useSelector((state) => state.auth.currentUser);
-
-    const firebaseAuthState = useAuthState(auth);
+    const [firebaseUser, loading] = useAuthState(auth);
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
@@ -49,10 +48,35 @@ export default function Navbar() {
         });
     }
 
+    const setCurrentUser = async (authenticatedUser) => {
+        const { uid, email, accessToken, refreshToken } = authenticatedUser;
+
+        const signedInUserDetails = await getSignedInUserDetailsFromSnapshot(uid);
+
+        dispatch(authenticateUser({
+            currentUser: {
+                uid,
+                email,
+                username: signedInUserDetails.username,
+                authProvider: signedInUserDetails.authProvider,
+                isNewUser: false,
+                accessToken,
+                refreshToken
+            }
+        }));
+    }
+
     useEffect(() => {
-        console.log('current firebase auth state');
-        console.log(firebaseAuthState);
-    }, [firebaseAuthState]);
+        if (loading) {
+            return;
+        }
+
+        if (firebaseUser) {
+            if (!currentUser) {
+                setCurrentUser(firebaseUser);
+            }
+        }
+    }, [firebaseUser, loading]);
 
     return (
         <div className="navbar-wrapper">
@@ -94,7 +118,7 @@ export default function Navbar() {
                             <NavLink className="btn-sm-square bg-white rounded-circle ms-3" to="/">
                                 <small className="fa fa-search text-body"></small>
                             </NavLink>
-                            <NavLink className="btn-sm-square bg-white rounded-circle ms-3" to="/register">
+                            <NavLink className="btn-sm-square bg-white rounded-circle ms-3" to="/login">
                                 <small className="fa fa-user text-body"></small>
                             </NavLink>
                             <NavLink className="btn-sm-square bg-white rounded-circle ms-3" to="/">

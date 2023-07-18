@@ -1,5 +1,4 @@
 import firstHomePageCarouselImage from '../resources/images/press-release-rm-32.jpg';
-import secondHomePageCarouselImage from '../resources/images/press-release-rm-32.jpg';
 
 const getSectionsImages = async() => {
     const sectionsImages = [];

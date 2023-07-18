@@ -1,9 +1,22 @@
 
+import { useEffect, useState } from 'react';
 import SecondaryPageMastheadHeader from '../components/seconday-page-masthead-header/SecondayPageMastheadHeader';
 
 import './ContactUs.css';
+import Spinner from '../../../components/spinner/Spinner';
+import { useDispatch, useSelector } from 'react-redux';
+import { setLoadingSpinner } from '../../../store/features/loading/loadingSlice';
 
 export default function ContactUs() {
+    const dispatch = useDispatch();
+
+    useEffect(() => {
+        dispatch(setLoadingSpinner(true));
+        setTimeout(() => {
+            dispatch(setLoadingSpinner(false));
+        }, 500);
+    }, []);
+
     return (
         <div className="contact-us-wrapper">
             <SecondaryPageMastheadHeader title="Contact Us" />

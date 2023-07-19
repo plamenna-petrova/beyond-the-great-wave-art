@@ -4,14 +4,15 @@ import { NavLink } from "react-router-dom";
 
 import { useSelector, useDispatch } from 'react-redux';
 
-import { getSignedInUserDetailsFromSnapshot } from "../../services/auth-service";
+import { getSignedInUserDetailsFromSnapshot, signOutAsync } from "../../services/auth-service";
 
 import { Button } from "antd";
 import { authenticateUser } from "../../store/features/auth/authSlice";
 import { auth } from "../../firebase";
 
-import { useAuthState, useSignOut } from "react-firebase-hooks/auth";
+import { useAuthState } from "react-firebase-hooks/auth";
 import { useEffect } from "react";
+import { setLoadingSpinner } from "../../store/features/loading/loadingSlice";
 
 const navLinkBaseClass = 'nav-item nav-link';
 const dropDownToggleBaseClass = 'nav-link dropdown-toggle';
@@ -37,54 +38,38 @@ const addActivityIndicationClassToNavLink = (isCurrentRouteActive, navigationArg
 export default function Navbar() {
     const currentUser = useSelector((state) => state.auth.currentUser);
     const [firebaseUser, loading] = useAuthState(auth);
-    const [signOut, signOutloading, signOutError] = useSignOut(auth);
 
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
     const logout = async () => {
-        await signOut().then(() => {
-            navigate('/login');
+        await signOutAsync().then(() => {
             dispatch(authenticateUser({ currentUser: null }));
-            console.log('USER LOGGED OUT');
-        }).catch((error) => {
-            console.log('error');
-            console.log(error);
+            dispatch(setLoadingSpinner(true));
+            navigate('/login');
         });
     }
 
-    useEffect(() => {
-        const setCurrentUser = async (authenticatedUser) => {
-            const { uid, email, accessToken, refreshToken } = authenticatedUser;
+    const setCurrentUser = async (authenticatedUser) => {
+        const { uid, email, accessToken, refreshToken } = authenticatedUser;
 
-            const signedInUserDetails = await getSignedInUserDetailsFromSnapshot(uid);
+        const signedInUserDetails = await getSignedInUserDetailsFromSnapshot(uid);
 
-            console.log('NAVBAR USER DETAILS');
-            console.log(signedInUserDetails);
-
-            const { docId, ...signedInUserInfo } = signedInUserDetails;
-
-            if (signedInUserDetails) {
-                if (signedInUserDetails.isNewUser) {
-                    const isNewUserSignedOut = await signOut();
-
-                    if (isNewUserSignedOut) {
-                        navigate('/login');
-                    }
-                } else {
-                    dispatch(authenticateUser({
-                        currentUser: {
-                            uid,
-                            email,
-                            ...signedInUserInfo,
-                            accessToken,
-                            refreshToken
-                        }
-                    }));
-                }
+        dispatch(authenticateUser({
+            currentUser: {
+                uid,
+                email,
+                username: signedInUserDetails.username,
+                authProvider: signedInUserDetails.authProvider,
+                role: signedInUserDetails.role,
+                isNewUser: false,
+                accessToken,
+                refreshToken
             }
-        }
+        }));
+    }
 
+    useEffect(() => {
         if (loading) {
             return;
         }
@@ -94,21 +79,7 @@ export default function Navbar() {
                 setCurrentUser(firebaseUser);
             }
         }
-    }, [firebaseUser, loading, currentUser, dispatch, navigate, signOut]);
-
-    if (signOutError) {
-        console.log('sign out error');
-        console.log(signOutError);
-
-        return (
-            <div>
-                <p>Error: {signOutError.message}</p>
-            </div>
-        );
-    }
-    if (signOutloading) {
-        return <p>Loading...</p>;
-    }
+    }, [firebaseUser, loading]);
 
     return (
         <div className="navbar-wrapper">
@@ -158,7 +129,7 @@ export default function Navbar() {
                             </NavLink>
                         </div>
                         {
-                            currentUser && <Button type="primary" onClick={logout}>Logout</Button>
+                            (currentUser && !currentUser.isNewUser) && <Button type="primary" onClick={logout}>Logout</Button>
                         }
                     </div>
                 </nav>

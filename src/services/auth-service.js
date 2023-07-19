@@ -6,32 +6,26 @@ import { addNewRecordToFirestoreAsync, mapQuerySnapshot } from "../helpers/fireb
 const googleProvider = new GoogleAuthProvider();
 
 const createUserWithEmailAndPasswordAsync = async(email, password) => {
-    try {
-        return createUserWithEmailAndPassword(auth, email, password);
-    } catch (error) {
-        console.log('error', error);
-    }
+    return createUserWithEmailAndPassword(auth, email, password);
 }
 
 const signInWithEmailAndPasswordAsync = async(email, password) => {
-    try {
-        return await signInWithEmailAndPassword(auth, email, password);
-    } catch (error) {
-        console.log('error', error);
-    }
+    return signInWithEmailAndPassword(auth, email, password);
 }
 
 const getSignedInUserDetailsFromSnapshot = async (uid) => {
+    const usersCollectionRefence = collection(firestore, "users");
+    const signedInUserQuery = query(usersCollectionRefence, where("uid", "==", uid));
+    const signedInUserQuerySnapshot = await getDocs(signedInUserQuery);
+    const mappedSignedInUserQuerySnapshot = mapQuerySnapshot(signedInUserQuerySnapshot);
+    const signedInUser = mappedSignedInUserQuerySnapshot[0];
+    const { username, authProvider, role } = signedInUser;
+    return { username, authProvider, role };
+}
+
+const signOutAsync = async() => {
     try {
-        const usersCollectionRefence = collection(firestore, "users");
-        const signedInUserQuery = query(usersCollectionRefence, where("uid", "==", uid));
-        const signedInUserQuerySnapshot = await getDocs(signedInUserQuery);
-        const mappedSignedInUserQuerySnapshot = mapQuerySnapshot(signedInUserQuerySnapshot);
-        const signedInUserDetails = mappedSignedInUserQuerySnapshot[0];
-        console.log('signed in user');
-        console.log(signedInUserDetails);
-        const { docId, username, authProvider, role, isNewUser } = signedInUserDetails;
-        return { docId, username, authProvider, role, isNewUser };
+        await signOut(auth);
     } catch (error) {
         console.log('error', error);
     }
@@ -85,6 +79,7 @@ const fogotPassword = async(email) => {
 export {
     createUserWithEmailAndPasswordAsync,
     signInWithEmailAndPasswordAsync,
+    signOutAsync,
     getSignedInUserDetailsFromSnapshot,
     signInWithGoogleAsync,
     sendPasswordResetLinkToEmailAsync,

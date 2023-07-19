@@ -4,10 +4,16 @@ import { Checkbox, Form, Input, Button, Typography, notification } from "antd";
 import React from 'react';
 
 import { createUserWithEmailAndPasswordAsync } from "../../../services/auth-service";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 
-import { addNewRecordToFirestoreAsync, getFirebaseAuthErrorInfo } from "../../../helpers/firebase-helper";
+import { addNewRecordToFirestoreAsync } from "../../../helpers/firebase-helper";
 import { getAdditionalUserInfo } from "firebase/auth";
+
+import { useDispatch } from 'react-redux';
+import { authenticateUser } from "../../../store/features/auth/authSlice";
+import { signOutAsync } from "../../../services/auth-service";
+import { getFirebaseAuthErrorInfo } from "../../../helpers/firebase-helper";
+import { setLoadingSpinner } from "../../../store/features/loading/loadingSlice";
 
 const formItemLayout = {
     labelCol: {
@@ -44,6 +50,9 @@ const tailFormItemLayout = {
 export default function Register() {
     const [registerForm] = Form.useForm();
     const [api, contextHolder] = notification.useNotification();
+    
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const onRegisterFormFinish = async (registerFormValues) => {
         try {
@@ -54,29 +63,33 @@ export default function Register() {
             );
 
             const { user } = createdUserWithEmailAndPasswordCredentials;
-
-            console.log('registered user details');
-            console.log(user);
-
-            const idTokenResult = await user.getIdTokenResult();
-
-            console.log('id token result');
-            console.log(idTokenResult);
-
-            const createdUserWithEmailAndPasswordAdditionalInfo = getAdditionalUserInfo(
-                createdUserWithEmailAndPasswordCredentials
-            );
-
+    
             const userToSave = {
                 uid: user.uid,
                 username,
-                authProvider: 'local',
+                authProvider: "local",
                 email,
-                role: 'user',
-                isNewUser: createdUserWithEmailAndPasswordAdditionalInfo.isNewUser
+                role: 'user'
             };
+    
+            await addNewRecordToFirestoreAsync("users", userToSave).then(async () => {
+                const { authProvider, ...userDetails } = userToSave;
+                const additionalUserInfo = getAdditionalUserInfo(createdUserWithEmailAndPasswordCredentials);
+    
+                dispatch(authenticateUser({
+                    currentUser: {
+                        ...userDetails,
+                        isNewUser: additionalUserInfo.isNewUser,
+                        accessToken: user.accessToken,
+                        refreshToken: user.refreshToken
+                    }
+                }));
 
-            await addNewRecordToFirestoreAsync('users', userToSave);
+                await signOutAsync().then(() => {
+                    dispatch(setLoadingSpinner(true));
+                    navigate('/login');
+                });
+            });
         } catch (error) {
             if (error.code !== undefined) {
                 const errorCodeKey = error.code;

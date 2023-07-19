@@ -7,7 +7,8 @@ import { getSignedInUserDetailsFromSnapshot, signInWithEmailAndPasswordAsync } f
 
 import { useSelector, useDispatch } from 'react-redux';
 import { authenticateUser } from "../../../store/features/auth/authSlice";
-import { getAdditionalUserInfo } from "firebase/auth";
+import { doc, updateDoc } from "firebase/firestore";
+import { firestore } from "../../../firebase";
 
 const formItemLayout = {
     labelCol: {
@@ -57,21 +58,42 @@ export default function Login() {
         const { user: { uid, accessToken, refreshToken } } = signedInUserCredentials;
 
         const signedInUserDetails = await getSignedInUserDetailsFromSnapshot(uid);
-        const additionalUserInfo = getAdditionalUserInfo(signedInUserCredentials);
 
-        dispatch(authenticateUser({
-            currentUser: {
-                uid,
-                email,
-                username: signedInUserDetails.username,
-                authProvider: signedInUserDetails.authProvider,
-                isNewUser: additionalUserInfo.isNewUser,
-                accessToken,
-                refreshToken
-            }
-        }));
+        console.log('signed in user details');
+        console.log(signedInUserDetails);
 
-        navigate('/');
+        const { docId, ...signedInUserInfo } = signedInUserDetails;
+
+        if (signedInUserDetails.isNewUser) {
+            await updateDoc(doc(firestore, "users", docId), {
+                isNewUser: false
+            });
+
+            console.log('UPDATED USER');
+            
+            dispatch(authenticateUser({
+                currentUser: {
+                    uid,
+                    email,
+                    username: signedInUserInfo.username,
+                    authProvider: signedInUserInfo.authProvider,
+                    role: signedInUserInfo.role,
+                    isNewUser: false,
+                    accessToken,
+                    refreshToken
+                }
+            }));
+        } else {
+            dispatch(authenticateUser({
+                currentUser: {
+                    uid,
+                    email,
+                    ...signedInUserInfo,
+                    accessToken,
+                    refreshToken
+                }
+            }));
+        }
     }
 
     const onLoginFormFinishFailed = (error) => {
@@ -87,7 +109,7 @@ export default function Login() {
 
             navigate('/');
         }
-    }, [currentUser, navigate]);
+    }, [currentUser, navigate, dispatch]);
 
     return (
         <div className="login-form-wrapper">

@@ -1,16 +1,13 @@
 
-import { Checkbox, Form, Input, Button, Typography } from "antd";
+import { Checkbox, Form, Input, Button, Typography, notification } from "antd";
 
-import React, { useEffect } from 'react';
+import React from 'react';
 
 import { createUserWithEmailAndPasswordAsync } from "../../../services/auth-service";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 
-import { addNewRecordToFirestoreAsync } from "../../../helpers/firebase-helper";
+import { addNewRecordToFirestoreAsync, getFirebaseAuthErrorInfo } from "../../../helpers/firebase-helper";
 import { getAdditionalUserInfo } from "firebase/auth";
-
-import { useSelector, useDispatch } from 'react-redux';
-import { authenticateUser } from "../../../store/features/auth/authSlice";
 
 const formItemLayout = {
     labelCol: {
@@ -46,11 +43,7 @@ const tailFormItemLayout = {
 
 export default function Register() {
     const [registerForm] = Form.useForm();
-    
-    const currentUser = useSelector((state) => state.auth.currentUser);
-
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
+    const [api, contextHolder] = notification.useNotification();
 
     const onRegisterFormFinish = async (registerFormValues) => {
         try {
@@ -61,48 +54,78 @@ export default function Register() {
             );
 
             const { user } = createdUserWithEmailAndPasswordCredentials;
-    
+
+            console.log('registered user details');
+            console.log(user);
+
+            const idTokenResult = await user.getIdTokenResult();
+
+            console.log('id token result');
+            console.log(idTokenResult);
+
+            const createdUserWithEmailAndPasswordAdditionalInfo = getAdditionalUserInfo(
+                createdUserWithEmailAndPasswordCredentials
+            );
+
             const userToSave = {
                 uid: user.uid,
                 username,
-                authProvider: "local",
-                email
+                authProvider: 'local',
+                email,
+                role: 'user',
+                isNewUser: createdUserWithEmailAndPasswordAdditionalInfo.isNewUser
             };
-    
-            await addNewRecordToFirestoreAsync("users", userToSave).then(() => {
-                const { authProvider, ...userDetails } = userToSave;
 
-                const additionalUserInfo = getAdditionalUserInfo(createdUserWithEmailAndPasswordCredentials);
-    
-                dispatch(authenticateUser({
-                    currentUser: {
-                        ...userDetails,
-                        isNewUser: additionalUserInfo.isNewUser,
-                        accessToken: user.accessToken,
-                        refreshToken: user.refreshToken
+            await addNewRecordToFirestoreAsync('users', userToSave);
+        } catch (error) {
+            if (error.code !== undefined) {
+                const errorCodeKey = error.code;
+                const registerFirebaseAuthErrorInfo = getFirebaseAuthErrorInfo(errorCodeKey);
+
+                if (registerFirebaseAuthErrorInfo !== []) {
+                    const [authErrorType, authErrorDescription] = registerFirebaseAuthErrorInfo;
+
+                    switch (authErrorType) {
+                        case "user-friendly":
+                            openRegistrationNotificationWithIcon(
+                                'error', 'Registration failed', authErrorDescription
+                            );
+                            break;
+                        case "system":
+                            openRegistrationNotificationWithIcon(
+                                'error', 'Registration failed', 'A system error has occurred. Try again later'
+                            );
+                            console.log('error', authErrorDescription);
+                            break;
+                        default:
+                            break;
                     }
-                }));
-    
-                navigate('/login');
-            });
-        } catch(error) {
-            console.log('error', error);
+                } else {
+                    console.log('error', error);
+                }
+            } else {
+                console.log('error', error);
+            }
         }
     }
 
     const onRegisterFormFinishFailed = (error) => {
-        console.log('error', error);
+        openRegistrationNotificationWithIcon(
+            'error', 'Registration failed', 'Validation errors found'
+        );
+        console.log('validation error / error\'s', error);
     }
 
-    useEffect(() => {
-        if (currentUser) {;
-            navigate('/login');
-        }
-        
-    }, [currentUser, navigate]);
+    const openRegistrationNotificationWithIcon = (type, message, description) => {
+        api[type]({
+            message,
+            description
+        });
+    }
 
     return (
         <div className="register-form-wrapper">
+            {contextHolder}
             <Form
                 {...formItemLayout}
                 form={registerForm}

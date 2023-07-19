@@ -21,22 +21,20 @@ const signInWithEmailAndPasswordAsync = async(email, password) => {
     }
 }
 
-const signOutAsync = async() => {
+const getSignedInUserDetailsFromSnapshot = async (uid) => {
     try {
-        await signOut(auth);
+        const usersCollectionRefence = collection(firestore, "users");
+        const signedInUserQuery = query(usersCollectionRefence, where("uid", "==", uid));
+        const signedInUserQuerySnapshot = await getDocs(signedInUserQuery);
+        const mappedSignedInUserQuerySnapshot = mapQuerySnapshot(signedInUserQuerySnapshot);
+        const signedInUserDetails = mappedSignedInUserQuerySnapshot[0];
+        console.log('signed in user');
+        console.log(signedInUserDetails);
+        const { docId, username, authProvider, role, isNewUser } = signedInUserDetails;
+        return { docId, username, authProvider, role, isNewUser };
     } catch (error) {
         console.log('error', error);
     }
-}
-
-const getSignedInUserDetailsFromSnapshot = async (uid) => {
-    const usersCollectionRefence = collection(firestore, "users");
-    const signedInUserQuery = query(usersCollectionRefence, where("uid", "==", uid));
-    const signedInUserQuerySnapshot = await getDocs(signedInUserQuery);
-    const mappedSignedInUserQuerySnapshot = mapQuerySnapshot(signedInUserQuerySnapshot);
-    const signedInUser = mappedSignedInUserQuerySnapshot[0];
-    const { username, authProvider } = signedInUser;
-    return { username, authProvider };
 }
 
 const signInWithGoogleAsync = async() => {
@@ -87,7 +85,6 @@ const fogotPassword = async(email) => {
 export {
     createUserWithEmailAndPasswordAsync,
     signInWithEmailAndPasswordAsync,
-    signOutAsync,
     getSignedInUserDetailsFromSnapshot,
     signInWithGoogleAsync,
     sendPasswordResetLinkToEmailAsync,

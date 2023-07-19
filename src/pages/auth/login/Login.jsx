@@ -12,6 +12,8 @@ import { getFirebaseAuthErrorInfo } from "../../../helpers/firebase-helper";
 import useNotification from "antd/es/notification/useNotification";
 import { setLoadingSpinner } from "../../../store/features/loading/loadingSlice";
 
+import './Login.css';
+
 const formItemLayout = {
     labelCol: {
         xs: {
@@ -111,8 +113,10 @@ export default function Login() {
     }
 
     const onLoginFormFinishFailed = (error) => {
-        console.log('login failed');
-        console.log('error', error);
+        openLoginNotificationWithIcon(
+            'error', 'Login failed', 'Validation errors found'
+        );
+        console.log('validation error / error\'s', error);
     }
 
     const openLoginNotificationWithIcon = (type, message, description) => {
@@ -141,62 +145,67 @@ export default function Login() {
     }, [currentUser, navigate]);
 
     return (
-        <div className="login-form-wrapper">
-            {contextHolder}
-            <Form
-                {...formItemLayout}
-                form={loginForm}
-                name="register"
-                onFinish={onLoginFormFinish}
-                onFinishFailed={onLoginFormFinishFailed}
-                style={{
-                    maxWidth: 600,
-                    marginTop: 10 + '%'
-                }}
-                scrollToFirstError
-            >
-                <Form.Item
-                    name="email"
-                    label="E-mail address"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Please enter your e-mail!'
-                        },
-                        {
-                            type: 'email',
-                            message: 'The input is not a valid email!'
-                        }
-                    ]}
+        <div className="login-page-wrapper">
+            <div className="login-form-container">
+                {contextHolder}
+                <Form
+                    {...formItemLayout}
+                    form={loginForm}
+                    name="register"
+                    onFinish={onLoginFormFinish}
+                    onFinishFailed={onLoginFormFinishFailed}
+                    scrollToFirstError
                 >
-                    <Input />
-                </Form.Item>
-                <Form.Item
-                    name="password"
-                    label="Password"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Please enter your password!'
-                        }
-                    ]}
-                >
-                    <Input.Password />
-                </Form.Item>
-                <Typography.Title
-                    level={3}
-                    style={{
-                        margin: 0
-                    }}
-                >
-                    Don't have an account? <NavLink to="/register">Register</NavLink>
-                </Typography.Title>
-                <Form.Item {...tailFormItemLayout}>
-                    <Button type="primary" htmlType="sumit">
-                        Login
-                    </Button>
-                </Form.Item>
-            </Form>
+                    <Form.Item
+                        name="email"
+                        label="E-mail address"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please enter your e-mail!'
+                            },
+                            {
+                                type: 'email',
+                                message: 'The input is not a valid email!'
+                            }
+                        ]}
+                    >
+                        <Input className="login-form-text-input" />
+                    </Form.Item>
+                    <Form.Item
+                        name="password"
+                        label="Password"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please enter your password!'
+                            }
+                        ]}
+                    >
+                        <Input.Password className="login-form-text-input" />
+                    </Form.Item>
+                    <Typography.Title
+                        level={3}
+                    >
+                        <NavLink to="/" style={{ color: '#0a2db5' }}>Forgot Password?</NavLink>
+                    </Typography.Title>
+                    <Typography.Title
+                        level={3}
+                    >
+                        Don't have an account? <NavLink to="/register" style={{ color: '#0a2db5' }}>Register</NavLink>
+                    </Typography.Title>
+                    <Form.Item {...tailFormItemLayout}>
+                        <Button type="primary" htmlType="submit" className="login-button">
+                            Login
+                        </Button>
+                    </Form.Item>
+                    <Form.Item {...tailFormItemLayout} style={{ marginBottom: 0 }}>
+                        <Button type="primary" className="login-button">
+                            Login With Google
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </div>
         </div>
     )
 }

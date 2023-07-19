@@ -15,6 +15,8 @@ import { signOutAsync } from "../../../services/auth-service";
 import { getFirebaseAuthErrorInfo } from "../../../helpers/firebase-helper";
 import { setLoadingSpinner } from "../../../store/features/loading/loadingSlice";
 
+import './Register.css';
+
 const formItemLayout = {
     labelCol: {
         xs: {
@@ -50,7 +52,7 @@ const tailFormItemLayout = {
 export default function Register() {
     const [registerForm] = Form.useForm();
     const [api, contextHolder] = notification.useNotification();
-    
+
     const dispatch = useDispatch();
     const navigate = useNavigate();
 
@@ -63,7 +65,7 @@ export default function Register() {
             );
 
             const { user } = createdUserWithEmailAndPasswordCredentials;
-    
+
             const userToSave = {
                 uid: user.uid,
                 username,
@@ -71,11 +73,11 @@ export default function Register() {
                 email,
                 role: 'user'
             };
-    
+
             await addNewRecordToFirestoreAsync("users", userToSave).then(async () => {
                 const { authProvider, ...userDetails } = userToSave;
                 const additionalUserInfo = getAdditionalUserInfo(createdUserWithEmailAndPasswordCredentials);
-    
+
                 dispatch(authenticateUser({
                     currentUser: {
                         ...userDetails,
@@ -137,130 +139,129 @@ export default function Register() {
     }
 
     return (
-        <div className="register-form-wrapper">
-            {contextHolder}
-            <Form
-                {...formItemLayout}
-                form={registerForm}
-                name="register"
-                onFinish={onRegisterFormFinish}
-                onFinishFailed={onRegisterFormFinishFailed}
-                style={{
-                    maxWidth: 600,
-                    marginTop: 10 + '%'
-                }}
-                scrollToFirstError
-            >
-                <Form.Item
-                    name="username"
-                    label="Username"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Please enter your username!',
-                            whitespace: true
-                        }
-                    ]}
-                >
-                    <Input />
-                </Form.Item>
-                <Form.Item
-                    name="email"
-                    label="E-mail address"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Please enter your e-mail!'
-                        },
-                        {
-                            type: 'email',
-                            message: 'The input is not a valid e-mail!'
-                        }
-                    ]}
-                >
-                    <Input />
-                </Form.Item>
-                <Form.Item
-                    name="password"
-                    label="Password"
-                    autoComplete="off"
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Please enter your password!'
-                        },
-                        {
-                            min: 6,
-                            message: 'The password must be at least 6 symbols long'
-                        },
-                        {
-                            max: 16,
-                            message: 'The pasword cannot be longer than 16 symbols'
-                        },
-                        {
-                            pattern: new RegExp(/^(?=.*\d)(?=.*[!@#$%^&/\\[\];',<>{}"+=.*])(?=.*[a-z])(?=.*[A-Z]).{4,}$/),
-                            message: 'The password must include at least one number, one uppercase character ' +
-                                'and one special character'
-                        }
-                    ]}
-                >
-                    <Input.Password />
-                </Form.Item>
-                <Form.Item
-                    name="confirmPassword"
-                    label="Confirm Password"
-                    autoComplete="off"
-                    dependencies={['password']}
-                    hasFeedback
-                    rules={[
-                        {
-                            required: true,
-                            message: 'Please confirm your password!'
-                        },
-                        ({ getFieldValue }) => ({
-                            validator(_, value) {
-                                if (!value || getFieldValue('password') === value) {
-                                    return Promise.resolve();
-                                }
-                                return Promise.reject(
-                                    new Error('The password and the confirmation password do not match!')
-                                );
-                            }
-                        })
-                    ]}
-                >
-                    <Input.Password />
-                </Form.Item>
-                <Form.Item
-                    name="agreement"
-                    valuePropName="checked"
-                    rules={[
-                        {
-                            validator: (_, value) => value
-                                ? Promise.resolve()
-                                : Promise.reject(new Error('Should accept agreement')),
-                        },
-                    ]}
-                    {...tailFormItemLayout}
-                >
-                    <Checkbox>
-                        I have read the <a href="/">agreement</a>
-                    </Checkbox>
-                </Form.Item>
-                <Typography.Title
-                    level={3}
+        <div className="register-page-wrapper">
+            <div className="register-form-container">
+                {contextHolder}
+                <Form
+                    {...formItemLayout}
+                    form={registerForm}
+                    name="register"
+                    onFinish={onRegisterFormFinish}
+                    onFinishFailed={onRegisterFormFinishFailed}
                     style={{
-                        margin: 0,
+                        maxWidth: 600,
+                        marginTop: 10 + '%'
                     }}
+                    scrollToFirstError
                 >
-                    Already have an account? <NavLink to="/login">Login</NavLink>
-                </Typography.Title>
-                <Form.Item {...tailFormItemLayout}>
-                    <Button type="primary" htmlType="submit">
-                        Register
-                    </Button>
-                </Form.Item>
-            </Form>
+                    <Form.Item
+                        name="username"
+                        label="Username"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please enter your username!',
+                                whitespace: true
+                            }
+                        ]}
+                    >
+                        <Input className="register-form-text-input" />
+                    </Form.Item>
+                    <Form.Item
+                        name="email"
+                        label="E-mail address"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please enter your e-mail!'
+                            },
+                            {
+                                type: 'email',
+                                message: 'The input is not a valid e-mail!'
+                            }
+                        ]}
+                    >
+                        <Input className="register-form-text-input" />
+                    </Form.Item>
+                    <Form.Item
+                        name="password"
+                        label="Password"
+                        autoComplete="off"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please enter your password!'
+                            },
+                            {
+                                min: 6,
+                                message: 'The password must be at least 6 symbols long'
+                            },
+                            {
+                                max: 16,
+                                message: 'The pasword cannot be longer than 16 symbols'
+                            },
+                            {
+                                pattern: new RegExp(/^(?=.*\d)(?=.*[!@#$%^&/\\[\];',<>{}"+=.*])(?=.*[a-z])(?=.*[A-Z]).{4,}$/),
+                                message: 'The password must include at least one number, one uppercase character ' +
+                                    'and one special character'
+                            }
+                        ]}
+                    >
+                        <Input.Password className="register-form-text-input" />
+                    </Form.Item>
+                    <Form.Item
+                        name="confirmPassword"
+                        label="Confirm Password"
+                        autoComplete="off"
+                        dependencies={['password']}
+                        hasFeedback
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please confirm your password!'
+                            },
+                            ({ getFieldValue }) => ({
+                                validator(_, value) {
+                                    if (!value || getFieldValue('password') === value) {
+                                        return Promise.resolve();
+                                    }
+                                    return Promise.reject(
+                                        new Error('The password and the confirmation password do not match!')
+                                    );
+                                }
+                            })
+                        ]}
+                    >
+                        <Input.Password className="register-form-text-input" />
+                    </Form.Item>
+                    <Form.Item
+                        name="agreement"
+                        valuePropName="checked"
+                        rules={[
+                            {
+                                validator: (_, value) => value
+                                    ? Promise.resolve()
+                                    : Promise.reject(new Error('Should accept agreement')),
+                            },
+                        ]}
+                        {...tailFormItemLayout}
+                    >
+                        <Checkbox>
+                            I have read the <a href="/" style={{ color: '#0a2db5' }}>agreement</a>
+                        </Checkbox>
+                    </Form.Item>
+                    <Typography.Title
+                        level={3}
+                    >
+                        Already have an account? <NavLink to="/login" style={{ color: '#0a2db5' }}>Login</NavLink>
+                    </Typography.Title>
+                    <Form.Item {...tailFormItemLayout}>
+                        <Button type="primary" htmlType="submit" className="register-button">
+                            Register
+                        </Button>
+                    </Form.Item>
+                </Form>
+            </div>
         </div>
     )
 }

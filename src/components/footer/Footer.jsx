@@ -4,7 +4,7 @@ import { Link, NavLink } from "react-router-dom";
 export default function Footer() {
     return (
         <div className="footer-wrapper">
-            <div className="container-fluid bg-dark footer mt-5 pt-5 wow fadeIn" data-wow-delay="0.1s" style={{ textAlign: 'initial' }}>
+            <div className="container-fluid bg-dark footer wow fadeIn" data-wow-delay="0.1s" style={{ textAlign: 'initial' }}>
                 <div className="container py-5">
                     <div className="row g-5">
                         <div className="col-lg-3 col-md-6">

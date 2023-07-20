@@ -1,8 +1,6 @@
 
 import { useEffect, useState } from 'react';
 
-import Spinner from '../../../components/spinner/Spinner';
-
 import MastheadHeader from './masthead-header/MastheadHeader';
 import Introduction from '../components/introduction/Introduction';
 import Features from '../components/features/Features';
@@ -13,7 +11,7 @@ import LatestBlogPostsSelection from '../components/latest-blog-posts-selection/
 
 import firstHomePageCarouselImage from '../../../resources/images/press-release-rm-32.jpg';
 import secondHomePageCarouselImage from '../../../resources/images/press-release-rm-32.jpg';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { setLoadingSpinner } from '../../../store/features/loading/loadingSlice';
 
 const sectionsImages = [
@@ -100,6 +98,7 @@ export default function Home() {
         setTimeout(() => {
             dispatch(setLoadingSpinner(false));
         }, 500);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

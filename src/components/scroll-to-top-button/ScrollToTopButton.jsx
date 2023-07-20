@@ -6,6 +6,13 @@ import './ScrollToTopButton.css';
 export default function ScrollToTopButton() {
     const [showScrollToTopButton, setShowScrollToTopButton] = useState(false);
 
+    const scrollToTop = () => {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    }
+
     useEffect(() => {
         window.addEventListener('scroll', () => {
             if (window.scrollY > 400) {
@@ -15,13 +22,6 @@ export default function ScrollToTopButton() {
             }
         })
     }, []);
-
-    const scrollToTop = () => {
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-        });
-    }
 
     return (
         <>

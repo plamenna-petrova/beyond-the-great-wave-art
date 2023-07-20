@@ -1,16 +1,16 @@
 
-import { Button, Form, Input, Typography, notification } from "antd";
+import { Button, Form, Input, Typography } from "antd";
 
 import React, { useEffect } from 'react';
-import { NavLink, useNavigate, useNavigation } from "react-router-dom";
-import { getSignedInUserDetailsFromSnapshot, signInWithEmailAndPasswordAsync } from "../../../services/auth-service";
+import { NavLink, useNavigate } from "react-router-dom";
+import { getSignedInUserDetailsFromQuerySnapshot, getUserQuerySnapshot, signInWithEmailAndPasswordAsync, signInWithGoogleAsync } from "../../../services/auth-service";
 
 import { useSelector, useDispatch } from 'react-redux';
 import { authenticateUser } from "../../../store/features/auth/authSlice";
 import { getAdditionalUserInfo } from "firebase/auth";
-import { getFirebaseAuthErrorInfo } from "../../../helpers/firebase-helper";
 import useNotification from "antd/es/notification/useNotification";
 import { setLoadingSpinner } from "../../../store/features/loading/loadingSlice";
+import { addNewRecordToFirestoreAsync, handleFirebaseAuthError } from "../../../services/firebase-service";
 
 import './Login.css';
 
@@ -63,7 +63,7 @@ export default function Login() {
 
             const { user: { uid, accessToken, refreshToken } } = signedInUserCredentials;
 
-            const signedInUserDetails = await getSignedInUserDetailsFromSnapshot(uid);
+            const signedInUserDetails = await getSignedInUserDetailsFromQuerySnapshot(uid);
             const additionalUserInfo = getAdditionalUserInfo(signedInUserCredentials);
 
             dispatch(authenticateUser({
@@ -81,42 +81,72 @@ export default function Login() {
 
             navigate('/');
         } catch (error) {
-            if (error.code !== undefined) {
-                const errorCodeKey = error.code;
-                const registerFirebaseAuthErrorInfo = getFirebaseAuthErrorInfo(errorCodeKey);
-
-                if (registerFirebaseAuthErrorInfo !== []) {
-                    const [authErrorType, authErrorDescription] = registerFirebaseAuthErrorInfo;
-
-                    switch (authErrorType) {
-                        case "user-friendly":
-                            openLoginNotificationWithIcon(
-                                'error', 'Login failed', authErrorDescription
-                            );
-                            break;
-                        case "system":
-                            openLoginNotificationWithIcon(
-                                'error', 'Login failed', 'A system error has occurred. Try again later'
-                            );
-                            console.log('error', authErrorDescription);
-                            break;
-                        default:
-                            break;
-                    }
-                } else {
-                    console.log('error', error);
-                }
-            } else {
-                console.log('error', error);
-            }
+            handleFirebaseAuthError(
+                error, 'Login failed', openLoginNotificationWithIcon
+            );
         }
     }
 
     const onLoginFormFinishFailed = (error) => {
         openLoginNotificationWithIcon(
-            'error', 'Login failed', 'Validation errors found'
+            'error', 'Login failed', 'Validation errors found!'
         );
         console.log('validation error / error\'s', error);
+    }
+
+    const loginWithGoogle = async () => {
+        try {   
+            const signedInUserWithGoogleCredentials = await signInWithGoogleAsync();
+            const authenticatedUserByGoogle = signedInUserWithGoogleCredentials.user;
+            const authenticatedUserByGoogleQuerySnapshot = await getUserQuerySnapshot(authenticatedUserByGoogle.uid);
+
+            const { uid, displayName: username, email, accessToken, refreshToken } = authenticatedUserByGoogle;
+
+            if (authenticatedUserByGoogleQuerySnapshot.docs.length === 0) {
+                const userToSave = {
+                    uid,
+                    username,
+                    authProvider: "google",
+                    email,
+                    role: 'user'
+                };
+
+                await addNewRecordToFirestoreAsync("users", userToSave).then(() => {
+                    dispatch(authenticateUser({
+                        currentUser: {
+                            ...userToSave,
+                            isNewUser: false,
+                            accessToken,
+                            refreshToken
+                        }
+                    }));
+
+                    navigate('/');
+                });
+            } else {
+                const signedInUserDetails = await getSignedInUserDetailsFromQuerySnapshot(uid);
+                const additionalUserInfo = getAdditionalUserInfo(signedInUserWithGoogleCredentials);
+
+                dispatch(authenticateUser({
+                    currentUser: {
+                        uid,
+                        email,
+                        username: signedInUserDetails.username,
+                        authProvider: signedInUserDetails.authProvider,
+                        role: signedInUserDetails.role,
+                        isNewUser: additionalUserInfo.isNewUser,
+                        accessToken,
+                        refreshToken
+                    }
+                }));
+
+                navigate('/');
+            }
+        } catch (error) {
+            handleFirebaseAuthError(
+                error, 'Login failed', openLoginNotificationWithIcon
+            );
+        }
     }
 
     const openLoginNotificationWithIcon = (type, message, description) => {
@@ -136,13 +166,13 @@ export default function Login() {
                 setTimeout(() => {
                     dispatch(setLoadingSpinner(false));
                 }, 500);
-
+                
                 return;
             }
 
             navigate('/');
         }
-    }, [currentUser, navigate]);
+    }, [currentUser, navigate, dispatch]);
 
     return (
         <div className="login-page-wrapper">
@@ -200,7 +230,7 @@ export default function Login() {
                         </Button>
                     </Form.Item>
                     <Form.Item {...tailFormItemLayout} style={{ marginBottom: 0 }}>
-                        <Button type="primary" className="login-button">
+                        <Button type="primary" className="login-button" onClick={loginWithGoogle}>
                             Login With Google
                         </Button>
                     </Form.Item>

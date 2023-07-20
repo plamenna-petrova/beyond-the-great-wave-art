@@ -6,10 +6,8 @@ import GalleriesSelection from "../components/galleries-selection/GalleriesSelec
 import Invitation from '../components/invitation/Invitation';
 import Testimonials from '../components/testimonials/Testimonials';
 
-import Spinner from '../../../components/spinner/Spinner';
-
 import firstHomePageCarouselImage from '../../../resources/images/press-release-rm-32.jpg';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { setLoadingSpinner } from '../../../store/features/loading/loadingSlice';
 
 const testimonialsDataForCarousel = [
@@ -66,6 +64,7 @@ export default function Galleries() {
         setTimeout(() => {
             dispatch(setLoadingSpinner(false));
         }, 500);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

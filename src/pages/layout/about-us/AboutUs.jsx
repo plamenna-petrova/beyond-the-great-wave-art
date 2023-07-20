@@ -1,6 +1,4 @@
 
-import Spinner from '../../../components/spinner/Spinner';
-
 import SecondaryPageMastheadHeader from "../components/seconday-page-masthead-header/SecondayPageMastheadHeader";
 import Introduction from "../components/introduction/Introduction";
 import Invitation from "../components/invitation/Invitation";
@@ -11,7 +9,7 @@ import secondHomePageCarouselImage from '../../../resources/images/press-release
 
 import './AboutUs.css';
 import { useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { setLoadingSpinner } from '../../../store/features/loading/loadingSlice';
 
 const sectionsImages = [
@@ -33,6 +31,7 @@ export default function AboutUs() {
     setTimeout(() => {
       dispatch(setLoadingSpinner(false));
     }, 500);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

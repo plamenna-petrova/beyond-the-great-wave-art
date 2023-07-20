@@ -4,7 +4,7 @@ import { NavLink } from "react-router-dom";
 
 import { useSelector, useDispatch } from 'react-redux';
 
-import { getSignedInUserDetailsFromSnapshot, signOutAsync } from "../../services/auth-service";
+import { getSignedInUserDetailsFromQuerySnapshot, signOutAsync } from "../../services/auth-service";
 
 import { Button } from "antd";
 import { authenticateUser } from "../../store/features/auth/authSlice";
@@ -47,26 +47,32 @@ export default function Navbar() {
             dispatch(authenticateUser({ currentUser: null }));
             dispatch(setLoadingSpinner(true));
             navigate('/login');
+        }).catch((error) => {
+            console.log('error', error);
         });
     }
 
     const setCurrentUser = async (authenticatedUser) => {
         const { uid, email, accessToken, refreshToken } = authenticatedUser;
 
-        const signedInUserDetails = await getSignedInUserDetailsFromSnapshot(uid);
+        const signedInUserDetails = await getSignedInUserDetailsFromQuerySnapshot(uid);
 
-        dispatch(authenticateUser({
-            currentUser: {
-                uid,
-                email,
-                username: signedInUserDetails.username,
-                authProvider: signedInUserDetails.authProvider,
-                role: signedInUserDetails.role,
-                isNewUser: false,
-                accessToken,
-                refreshToken
-            }
-        }));
+        if (signedInUserDetails !== undefined) {
+            const { username, authProvider, role } = signedInUserDetails;
+ 
+            dispatch(authenticateUser({
+                currentUser: {
+                    uid,
+                    email,
+                    username,
+                    authProvider,
+                    role,
+                    isNewUser: false,
+                    accessToken,
+                    refreshToken
+                }
+            }));
+        }
     }
 
     useEffect(() => {
@@ -79,6 +85,8 @@ export default function Navbar() {
                 setCurrentUser(firebaseUser);
             }
         }
+        
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [firebaseUser, loading]);
 
     return (

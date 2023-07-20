@@ -1,10 +1,9 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import SecondaryPageMastheadHeader from '../components/seconday-page-masthead-header/SecondayPageMastheadHeader';
 
 import './ContactUs.css';
-import Spinner from '../../../components/spinner/Spinner';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 import { setLoadingSpinner } from '../../../store/features/loading/loadingSlice';
 
 export default function ContactUs() {
@@ -15,6 +14,7 @@ export default function ContactUs() {
         setTimeout(() => {
             dispatch(setLoadingSpinner(false));
         }, 500);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

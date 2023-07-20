@@ -3,16 +3,15 @@ import { Checkbox, Form, Input, Button, Typography, notification } from "antd";
 
 import React from 'react';
 
-import { createUserWithEmailAndPasswordAsync } from "../../../services/auth-service";
+import { createUserWithEmailAndPasswordAsync, getUserQuerySnapshot, signInWithGoogleAsync } from "../../../services/auth-service";
 import { NavLink, useNavigate } from "react-router-dom";
 
-import { addNewRecordToFirestoreAsync } from "../../../helpers/firebase-helper";
+import { addNewRecordToFirestoreAsync, handleFirebaseAuthError } from "../../../services/firebase-service";
 import { getAdditionalUserInfo } from "firebase/auth";
 
 import { useDispatch } from 'react-redux';
 import { authenticateUser } from "../../../store/features/auth/authSlice";
 import { signOutAsync } from "../../../services/auth-service";
-import { getFirebaseAuthErrorInfo } from "../../../helpers/firebase-helper";
 import { setLoadingSpinner } from "../../../store/features/loading/loadingSlice";
 
 import './Register.css';
@@ -75,12 +74,11 @@ export default function Register() {
             };
 
             await addNewRecordToFirestoreAsync("users", userToSave).then(async () => {
-                const { authProvider, ...userDetails } = userToSave;
                 const additionalUserInfo = getAdditionalUserInfo(createdUserWithEmailAndPasswordCredentials);
 
                 dispatch(authenticateUser({
                     currentUser: {
-                        ...userDetails,
+                        ...userToSave,
                         isNewUser: additionalUserInfo.isNewUser,
                         accessToken: user.accessToken,
                         refreshToken: user.refreshToken
@@ -90,51 +88,88 @@ export default function Register() {
                 await signOutAsync().then(() => {
                     dispatch(setLoadingSpinner(true));
                     navigate('/login');
+                }).catch((error) => {
+                    console.log('error', error);
                 });
             });
         } catch (error) {
-            if (error.code !== undefined) {
-                const errorCodeKey = error.code;
-                const registerFirebaseAuthErrorInfo = getFirebaseAuthErrorInfo(errorCodeKey);
-
-                if (registerFirebaseAuthErrorInfo !== []) {
-                    const [authErrorType, authErrorDescription] = registerFirebaseAuthErrorInfo;
-
-                    switch (authErrorType) {
-                        case "user-friendly":
-                            openRegistrationNotificationWithIcon(
-                                'error', 'Registration failed', authErrorDescription
-                            );
-                            break;
-                        case "system":
-                            openRegistrationNotificationWithIcon(
-                                'error', 'Registration failed', 'A system error has occurred. Try again later'
-                            );
-                            console.log('error', authErrorDescription);
-                            break;
-                        default:
-                            break;
-                    }
-                } else {
-                    console.log('error', error);
-                }
-            } else {
-                console.log('error', error);
-            }
+            handleFirebaseAuthError(
+                error, 'Registration failed', openRegistrationNotificationWithIcon
+            );
         }
     }
 
     const onRegisterFormFinishFailed = (error) => {
         openRegistrationNotificationWithIcon(
-            'error', 'Registration failed', 'Validation errors found'
+            'error', 'Registration failed', 'Validation errors found!'
         );
         console.log('validation error / error\'s', error);
     }
 
-    const openRegistrationNotificationWithIcon = (type, message, description) => {
+    const registerWithGoogle = async () => {
+        try {
+            const signInWithGoogleCredentails = await signInWithGoogleAsync();
+            const authenticatedUserByGoogle = signInWithGoogleCredentails.user;
+            const authenticatedUserByGoogleQuerySnapshot = await getUserQuerySnapshot(authenticatedUserByGoogle.uid);
+
+            if (authenticatedUserByGoogleQuerySnapshot.docs.length !== 0) {
+                dispatch(setLoadingSpinner(true));
+                await signOutAsync().then(() => {
+                    dispatch(authenticateUser({ currentUser: null }));
+                    setTimeout(() => {
+                        dispatch(setLoadingSpinner(false));
+                        openRegistrationNotificationWithIcon(
+                            'error', 
+                            'Registration failed', 
+                            'We have found an already created account with Google. Try to login instead', 
+                            10
+                        );
+                    }, 500);
+                });
+                return;
+            } else {
+                const { uid, displayName: username, email, accessToken, refreshToken } = authenticatedUserByGoogle;
+     
+                const userToSave = {
+                    uid,
+                    username,
+                    authProvider: "google",
+                    email,
+                    role: 'user'
+                };
+    
+                await addNewRecordToFirestoreAsync("users", userToSave).then(async () => {
+                    const additionalUserInfo = getAdditionalUserInfo(signInWithGoogleCredentails);
+
+                    dispatch(authenticateUser({
+                        currentUser: {
+                            ...userToSave,
+                            isNewUser: additionalUserInfo.isNewUser,
+                            accessToken,
+                            refreshToken
+                        }
+                    }));
+
+                    await signOutAsync().then(() => {
+                        dispatch(setLoadingSpinner(true));
+                        navigate('/login');
+                    }).catch((error) => {
+                        console.log('error', error);
+                    });
+                });
+            }
+        } catch (error) {
+            handleFirebaseAuthError(
+                error, 'Registration failed', openRegistrationNotificationWithIcon
+            );
+        }
+    }
+
+    const openRegistrationNotificationWithIcon = (type, message, description, duration) => {
         api[type]({
             message,
-            description
+            description,
+            duration: duration ? duration : 0
         });
     }
 
@@ -258,6 +293,11 @@ export default function Register() {
                     <Form.Item {...tailFormItemLayout}>
                         <Button type="primary" htmlType="submit" className="register-button">
                             Register
+                        </Button>
+                    </Form.Item>
+                    <Form.Item {...tailFormItemLayout}>
+                        <Button type="primary" className="register-button" onClick={registerWithGoogle}>
+                            Register With Google
                         </Button>
                     </Form.Item>
                 </Form>

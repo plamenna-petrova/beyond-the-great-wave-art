@@ -1,9 +1,18 @@
-import { GoogleAuthProvider, createUserWithEmailAndPassword, sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup, signOut } from "firebase/auth";
+import { 
+    createUserWithEmailAndPassword, 
+    sendPasswordResetEmail, 
+    signInWithEmailAndPassword, 
+    signInWithPopup, 
+    signOut,
+    GoogleAuthProvider,
+    FacebookAuthProvider
+} from "firebase/auth";
 import { auth, firestore } from "../firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
-import { addNewRecordToFirestoreAsync, mapQuerySnapshot } from "../helpers/firebase-helper";
+import { mapQuerySnapshot } from "../services/firebase-service";
 
 const googleProvider = new GoogleAuthProvider();
+const facebookProvider = new FacebookAuthProvider();
 
 const createUserWithEmailAndPasswordAsync = async(email, password) => {
     return createUserWithEmailAndPassword(auth, email, password);
@@ -13,75 +22,43 @@ const signInWithEmailAndPasswordAsync = async(email, password) => {
     return signInWithEmailAndPassword(auth, email, password);
 }
 
-const getSignedInUserDetailsFromSnapshot = async (uid) => {
-    const usersCollectionRefence = collection(firestore, "users");
-    const signedInUserQuery = query(usersCollectionRefence, where("uid", "==", uid));
-    const signedInUserQuerySnapshot = await getDocs(signedInUserQuery);
-    const mappedSignedInUserQuerySnapshot = mapQuerySnapshot(signedInUserQuerySnapshot);
-    const signedInUser = mappedSignedInUserQuerySnapshot[0];
-    const { username, authProvider, role } = signedInUser;
-    return { username, authProvider, role };
+const signInWithGoogleAsync = async() => {
+    return signInWithPopup(auth, googleProvider);
+}
+
+const signInWithFacebookAsync = async() => {
+    return signInWithPopup(auth, facebookProvider);
 }
 
 const signOutAsync = async() => {
-    try {
-        await signOut(auth);
-    } catch (error) {
-        console.log('error', error);
-    }
-}
-
-const signInWithGoogleAsync = async() => {
-    try {
-        const signInWithPopupResponse = await signInWithPopup(auth, googleProvider);
-        const authenticatedUserByGoogle = signInWithPopupResponse.user;
-
-        const usersCollectionReference = collection(firestore, "users");
-
-        const authenticatedUserByGoogleQuery = query(
-            collection(usersCollectionReference), 
-            where("uid", "==", authenticatedUserByGoogle.uid)
-        );
-
-        const queriedUserDocs = await getDocs(authenticatedUserByGoogleQuery);
-
-        if (queriedUserDocs.docs.length === 0) {
-            const userToCreate = {
-                uid: authenticatedUserByGoogle.uid,
-                username: authenticatedUserByGoogle.displayName,
-                authProvider: "google",
-                email: authenticatedUserByGoogle.email
-            };
-            
-            await addNewRecordToFirestoreAsync("users", userToCreate);
-        }
-    } catch (error) {
-        console.log('error', error);
-    }
+    await signOut(auth);
 }
 
 const sendPasswordResetLinkToEmailAsync = async(email) => {
-    try {
-        await sendPasswordResetEmail(auth, email);
-    } catch (error) {
-        console.log('error', error);
-    }
+    await sendPasswordResetEmail(auth, email);
 }
 
-const fogotPassword = async(email) => {
-    try {
-        await fogotPassword(email);
-    } catch (error) {
-        console.log('error', error);
-    }
+const getSignedInUserDetailsFromQuerySnapshot = async (uid) => {
+    const signedInUserQuerySnapshot = await getUserQuerySnapshot(uid);
+    const mappedSignedInUserQuerySnapshot = mapQuerySnapshot(signedInUserQuerySnapshot);
+    const signedInUser = mappedSignedInUserQuerySnapshot[0];
+    return signedInUser;
+}
+
+const getUserQuerySnapshot = async (uid) => {
+    const usersCollectionRefence = collection(firestore, "users");
+    const userQuery = query(usersCollectionRefence, where("uid", "==", uid));
+    const userQuerySnapshot = await getDocs(userQuery);
+    return userQuerySnapshot;
 }
 
 export {
     createUserWithEmailAndPasswordAsync,
     signInWithEmailAndPasswordAsync,
     signOutAsync,
-    getSignedInUserDetailsFromSnapshot,
+    getSignedInUserDetailsFromQuerySnapshot,
+    getUserQuerySnapshot,
     signInWithGoogleAsync,
-    sendPasswordResetLinkToEmailAsync,
-    fogotPassword
+    signInWithFacebookAsync,
+    sendPasswordResetLinkToEmailAsync
 }

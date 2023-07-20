@@ -1,10 +1,9 @@
-import { useEffect, useState } from "react"
-import Spinner from "../../../components/spinner/Spinner";
+import { useEffect } from "react"
 import SecondaryPageMastheadHeader from "../components/seconday-page-masthead-header/SecondayPageMastheadHeader";
 import Testimonials from "../components/testimonials/Testimonials";
 
 import firstHomePageCarouselImage from '../../../resources/images/press-release-rm-32.jpg';
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { setLoadingSpinner } from "../../../store/features/loading/loadingSlice";
 
 const testimonialsDataForCarousel = [
@@ -42,6 +41,7 @@ export default function CustomerReviews() {
         setTimeout(() => {
             dispatch(setLoadingSpinner(false));
         }, 500);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (

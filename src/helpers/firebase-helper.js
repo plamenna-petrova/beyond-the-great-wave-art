@@ -1,5 +1,3 @@
-import { addDoc, collection } from "firebase/firestore"
-import { firestore } from "../firebase"
 
 const firebaseAuthErrorCodes = {
     "user-friendly": {
@@ -93,35 +91,6 @@ const firebaseAuthErrorCodes = {
     }
 }
 
-const mapQuerySnapshot = (querySnapshot) => {
-    return querySnapshot.docs.map((doc) => ({ docId: doc.id, ...doc.data() }));
-}
-
-const addNewRecordToFirestoreAsync = async (collectionName, recordObject) => {
-    await addDoc(collection(firestore, collectionName), recordObject);
-}
-
-const getFirebaseAuthErrorInfo = (receivedFirebaseErrorCode) => {
-    let firebaseAuthErrorInfo = [];
-
-    if (receivedFirebaseErrorCode !== null || receivedFirebaseErrorCode !== undefined) {
-        for (const firebaseAuthErrorTypeKey of Object.keys(firebaseAuthErrorCodes)) {
-            if (Object.keys(firebaseAuthErrorCodes[firebaseAuthErrorTypeKey]).includes(receivedFirebaseErrorCode)) {
-                firebaseAuthErrorInfo = [
-                    firebaseAuthErrorTypeKey,
-                    firebaseAuthErrorCodes[firebaseAuthErrorTypeKey][receivedFirebaseErrorCode]
-                ];
-                break;
-            }
-        }
-    }
-
-    return firebaseAuthErrorInfo;
-}
-
 export {
-    firebaseAuthErrorCodes,
-    mapQuerySnapshot,
-    addNewRecordToFirestoreAsync,
-    getFirebaseAuthErrorInfo
+    firebaseAuthErrorCodes
 }

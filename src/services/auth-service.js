@@ -4,15 +4,13 @@ import {
     signInWithEmailAndPassword, 
     signInWithPopup, 
     signOut,
-    GoogleAuthProvider,
-    FacebookAuthProvider
+    GoogleAuthProvider
 } from "firebase/auth";
 import { auth, firestore } from "../firebase";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { mapQuerySnapshot } from "../services/firebase-service";
 
 const googleProvider = new GoogleAuthProvider();
-const facebookProvider = new FacebookAuthProvider();
 
 const createUserWithEmailAndPasswordAsync = async(email, password) => {
     return createUserWithEmailAndPassword(auth, email, password);
@@ -24,10 +22,6 @@ const signInWithEmailAndPasswordAsync = async(email, password) => {
 
 const signInWithGoogleAsync = async() => {
     return signInWithPopup(auth, googleProvider);
-}
-
-const signInWithFacebookAsync = async() => {
-    return signInWithPopup(auth, facebookProvider);
 }
 
 const signOutAsync = async() => {
@@ -59,6 +53,5 @@ export {
     getSignedInUserDetailsFromQuerySnapshot,
     getUserQuerySnapshot,
     signInWithGoogleAsync,
-    signInWithFacebookAsync,
     sendPasswordResetLinkToEmailAsync
 }

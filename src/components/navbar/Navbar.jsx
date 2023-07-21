@@ -57,7 +57,7 @@ export default function Navbar() {
 
         const signedInUserDetails = await getSignedInUserDetailsFromQuerySnapshot(uid);
 
-        if (signedInUserDetails !== undefined) {
+        if (signedInUserDetails) {
             const { username, authProvider, role } = signedInUserDetails;
  
             dispatch(authenticateUser({

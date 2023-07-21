@@ -13,7 +13,7 @@ const addNewRecordToFirestoreAsync = async (collectionName, recordObject) => {
 }
 
 const handleFirebaseAuthError = (error, notificationMessage, errorNotificationHandler) => {
-    if (error.code !== undefined) {
+    if (error.code) {
         const errorCodeKey = error.code;
         const registerFirebaseAuthErrorInfo = getFirebaseAuthErrorInfo(errorCodeKey);
 
@@ -46,7 +46,7 @@ const handleFirebaseAuthError = (error, notificationMessage, errorNotificationHa
 const getFirebaseAuthErrorInfo = (receivedFirebaseErrorCode) => {
     let firebaseAuthErrorInfo = [];
 
-    if (receivedFirebaseErrorCode !== null || receivedFirebaseErrorCode !== undefined) {
+    if (receivedFirebaseErrorCode) {
         for (const firebaseAuthErrorTypeKey of Object.keys(firebaseAuthErrorCodes)) {
             if (Object.keys(firebaseAuthErrorCodes[firebaseAuthErrorTypeKey]).includes(receivedFirebaseErrorCode)) {
                 firebaseAuthErrorInfo = [

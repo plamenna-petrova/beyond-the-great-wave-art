@@ -3,7 +3,7 @@ import { Button, Form, Input, Typography } from "antd";
 
 import React, { useEffect } from 'react';
 import { NavLink, useNavigate } from "react-router-dom";
-import { getSignedInUserDetailsFromQuerySnapshot, getUserQuerySnapshot, signInWithEmailAndPasswordAsync, signInWithGoogleAsync } from "../../../services/auth-service";
+import { getSignedInUserDetailsFromQuerySnapshot, getUserQuerySnapshot, signInWithEmailAndPasswordAsync, signInWithGoogleAsync, signOutAsync } from "../../../services/auth-service";
 
 import { useSelector, useDispatch } from 'react-redux';
 import { authenticateUser } from "../../../store/features/auth/authSlice";
@@ -61,25 +61,32 @@ export default function Login() {
                 email, password
             );
 
-            const { user: { uid, accessToken, refreshToken } } = signedInUserCredentials;
+            const { user: { uid, emailVerified, accessToken, refreshToken } } = signedInUserCredentials;
 
-            const signedInUserDetails = await getSignedInUserDetailsFromQuerySnapshot(uid);
-            const additionalUserInfo = getAdditionalUserInfo(signedInUserCredentials);
-
-            dispatch(authenticateUser({
-                currentUser: {
-                    uid,
-                    email,
-                    username: signedInUserDetails.username,
-                    authProvider: signedInUserDetails.authProvider,
-                    role: signedInUserDetails.role,
-                    isNewUser: additionalUserInfo.isNewUser,
-                    accessToken,
-                    refreshToken
-                }
-            }));
-
-            navigate('/');
+            if (!emailVerified) {
+                await signOutAsync();
+                openLoginNotificationWithIcon(
+                    'error', 'Login failed', 'The provided email has not yet been verified'
+                );
+            } else {
+                const signedInUserDetails = await getSignedInUserDetailsFromQuerySnapshot(uid);
+                const additionalUserInfo = getAdditionalUserInfo(signedInUserCredentials);
+    
+                dispatch(authenticateUser({
+                    currentUser: {
+                        uid,
+                        email,
+                        username: signedInUserDetails.username,
+                        authProvider: signedInUserDetails.authProvider,
+                        role: signedInUserDetails.role,
+                        isNewUser: additionalUserInfo.isNewUser,
+                        accessToken,
+                        refreshToken
+                    }
+                }));
+    
+                navigate('/');    
+            }
         } catch (error) {
             handleFirebaseAuthError(
                 error, 'Login failed', openLoginNotificationWithIcon
@@ -162,6 +169,8 @@ export default function Login() {
                 dispatch(setLoadingSpinner(false));
             }, 500);
         } else {
+            console.log('HERE IN EFFECT');
+
             if (currentUser.isNewUser) {
                 setTimeout(() => {
                     dispatch(setLoadingSpinner(false));
@@ -196,7 +205,7 @@ export default function Login() {
                             },
                             {
                                 type: 'email',
-                                message: 'The input is not a valid email!'
+                                message: 'The input is not a valid e-mail!'
                             }
                         ]}
                     >
@@ -217,7 +226,7 @@ export default function Login() {
                     <Typography.Title
                         level={3}
                     >
-                        <NavLink to="/" style={{ color: '#0a2db5' }}>Forgot Password?</NavLink>
+                        <NavLink to="/forgot-password" style={{ color: '#0a2db5' }}>Forgot Password?</NavLink>
                     </Typography.Title>
                     <Typography.Title
                         level={3}

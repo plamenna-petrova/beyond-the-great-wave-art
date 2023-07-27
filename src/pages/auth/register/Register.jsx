@@ -3,7 +3,7 @@ import { Checkbox, Form, Input, Button, Typography, notification } from "antd";
 
 import React from 'react';
 
-import { createUserWithEmailAndPasswordAsync, getUserQuerySnapshot, signInWithGoogleAsync } from "../../../services/auth-service";
+import { createUserWithEmailAndPasswordAsync, getUserQuerySnapshot, sendEmailVerificationAsync, signInWithGoogleAsync } from "../../../services/auth-service";
 import { NavLink, useNavigate } from "react-router-dom";
 
 import { addNewRecordToFirestoreAsync, handleFirebaseAuthError } from "../../../services/firebase-service";
@@ -65,6 +65,8 @@ export default function Register() {
 
             const { user } = createdUserWithEmailAndPasswordCredentials;
 
+            await sendEmailVerificationAsync(user);
+
             const userToSave = {
                 uid: user.uid,
                 username,
@@ -74,6 +76,7 @@ export default function Register() {
             };
 
             await addNewRecordToFirestoreAsync("users", userToSave).then(async () => {
+
                 const additionalUserInfo = getAdditionalUserInfo(createdUserWithEmailAndPasswordCredentials);
 
                 dispatch(authenticateUser({

@@ -2,7 +2,8 @@ import {
     createUserWithEmailAndPassword, 
     sendPasswordResetEmail, 
     signInWithEmailAndPassword, 
-    signInWithPopup, 
+    signInWithPopup,
+    sendEmailVerification,
     signOut,
     GoogleAuthProvider
 } from "firebase/auth";
@@ -28,7 +29,11 @@ const signOutAsync = async() => {
     await signOut(auth);
 }
 
-const sendPasswordResetLinkToEmailAsync = async(email) => {
+const sendEmailVerificationAsync = async (registeredUser) => {
+    await sendEmailVerification(registeredUser);
+}
+
+const sendPasswordResetLinkEmailAsync = async(email) => {
     await sendPasswordResetEmail(auth, email);
 }
 
@@ -53,5 +58,6 @@ export {
     getSignedInUserDetailsFromQuerySnapshot,
     getUserQuerySnapshot,
     signInWithGoogleAsync,
-    sendPasswordResetLinkToEmailAsync
+    sendEmailVerificationAsync,
+    sendPasswordResetLinkEmailAsync
 }

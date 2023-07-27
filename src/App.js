@@ -17,6 +17,7 @@ import Login from "./pages/auth/login/Login";
 import Spinner from "./components/spinner/Spinner";
 
 import { useSelector } from "react-redux";
+import ForgotPassword from "./pages/auth/forgot-password/ForgotPassword";
 
 const routes = [
     {
@@ -50,6 +51,10 @@ const routes = [
     {
         path: '/login',
         element: <Login />
+    },
+    {
+        path: '/forgot-password',
+        element: <ForgotPassword />
     },
     {
         path: '*',

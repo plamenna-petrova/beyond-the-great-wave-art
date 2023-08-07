@@ -59,7 +59,7 @@ export default function Navbar() {
 
         if (signedInUserDetails) {
             const { username, authProvider, role } = signedInUserDetails;
- 
+
             dispatch(authenticateUser({
                 currentUser: {
                     uid,
@@ -85,8 +85,8 @@ export default function Navbar() {
                 setCurrentUser(firebaseUser);
             }
         }
-        
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [firebaseUser, loading]);
 
     return (
@@ -135,6 +135,13 @@ export default function Navbar() {
                             <NavLink className="btn-sm-square bg-white rounded-circle ms-3" to="/">
                                 <small className="fa fa-shopping-bag text-body"></small>
                             </NavLink>
+                            {
+                                (currentUser && !currentUser.isNewUser && currentUser.role === 'admin') &&
+                                <NavLink className="btn-sm-square bg-white rounded-circle ms-3" to="/dashboard">
+                                    <small className="fas fa-tachometer-alt text-body"></small>
+                                </NavLink>
+                            }
+
                         </div>
                         {
                             (currentUser && !currentUser.isNewUser) && <Button type="primary" onClick={logout}>Logout</Button>

@@ -18,49 +18,13 @@ import Spinner from "./components/spinner/Spinner";
 
 import { useSelector } from "react-redux";
 import ForgotPassword from "./pages/auth/forgot-password/ForgotPassword";
+import Dashboard from "./pages/dashboard/Dashboard";
 
-const routes = [
-    {
-        path: '/',
-        element: <Home />
-    },
-    {
-        path: '/galleries',
-        element: <Galleries />
-    },
-    {
-        path: '/about-us',
-        element: <AboutUs />
-    },
-    {
-        path: '/contact-us',
-        element: <ContactUs />
-    },
-    {
-        path: '/blog',
-        element: <Blog />
-    },
-    {
-        path: '/testimonials',
-        element: <CustomerReviews />
-    },
-    {
-        path: '/register',
-        element: <Register />
-    },
-    {
-        path: '/login',
-        element: <Login />
-    },
-    {
-        path: '/forgot-password',
-        element: <ForgotPassword />
-    },
-    {
-        path: '*',
-        element: <NotFoundPage />
-    }
-]
+import ArtFieldsManagement from "./pages/dashboard/art-fields-management/ArtFieldsManagement";
+import ArtMovementsManagement from "./pages/dashboard/art-movements-management/ArtMovementsManagement";
+import ArtistsManagement from "./pages/dashboard/artists-management/ArtistsManagement";
+import GalleriesManagement from "./pages/dashboard/galleries-management/GalleriesManagement";
+
 
 export default function App() {
     const isLoadingSpinnerActive = useSelector((state) => state.loading.isLoadingSpinnerActive);
@@ -70,11 +34,22 @@ export default function App() {
             {isLoadingSpinnerActive && <Spinner />}
             <Navbar />
             <Routes>
-                {
-                    routes.map((route, index) => (
-                        <Route key={index} path={route.path} element={route.element} />
-                    ))
-                }
+                <Route index element={<Home />}></Route>
+                <Route path="/galleries" element={<Galleries />}></Route>
+                <Route path="/about-us" element={<AboutUs />}></Route>
+                <Route path="/contact-us" element={<ContactUs />}></Route>
+                <Route path="/blog" element={<Blog />}></Route>
+                <Route path="/testimonials" element={<CustomerReviews />}></Route>
+                <Route path="/register" element={<Register />}></Route>
+                <Route path="/login" element={<Login />}></Route>
+                <Route path="/forgot-password" element={<ForgotPassword />}></Route>
+                <Route path="dashboard" element={<Dashboard />}>
+                    <Route path="art-fields-management" element={<ArtFieldsManagement />}></Route>
+                    <Route path="art-movements-management" element={<ArtMovementsManagement />}></Route>
+                    <Route path="artists-management" element={<ArtistsManagement />}></Route>
+                    <Route path="galleries-management" element={<GalleriesManagement />}></Route>
+                </Route>
+                <Route path="*" element={<NotFoundPage />}></Route>
             </Routes>
             <Footer />
             <ScrollToTopButton />

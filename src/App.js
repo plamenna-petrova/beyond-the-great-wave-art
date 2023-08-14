@@ -20,7 +20,7 @@ import { useSelector } from "react-redux";
 import ForgotPassword from "./pages/auth/forgot-password/ForgotPassword";
 import Dashboard from "./pages/dashboard/Dashboard";
 
-import ArtFieldsManagement from "./pages/dashboard/art-fields-management/ArtFieldsManagement";
+import FieldsManagement from "./pages/dashboard/fields-management/FieldsManagement";
 import ArtMovementsManagement from "./pages/dashboard/art-movements-management/ArtMovementsManagement";
 import ArtistsManagement from "./pages/dashboard/artists-management/ArtistsManagement";
 import GalleriesManagement from "./pages/dashboard/galleries-management/GalleriesManagement";
@@ -44,7 +44,7 @@ export default function App() {
                 <Route path="/login" element={<Login />}></Route>
                 <Route path="/forgot-password" element={<ForgotPassword />}></Route>
                 <Route path="dashboard" element={<Dashboard />}>
-                    <Route path="art-fields-management" element={<ArtFieldsManagement />}></Route>
+                    <Route path="fields-management" element={<FieldsManagement />}></Route>
                     <Route path="art-movements-management" element={<ArtMovementsManagement />}></Route>
                     <Route path="artists-management" element={<ArtistsManagement />}></Route>
                     <Route path="galleries-management" element={<GalleriesManagement />}></Route>

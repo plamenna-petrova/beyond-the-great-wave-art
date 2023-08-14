@@ -1,15 +1,23 @@
 
-import { addDoc, collection } from "firebase/firestore"
+import { addDoc, collection, deleteDoc, doc, updateDoc } from "firebase/firestore"
 import { firestore } from "../firebase"
 
 import { firebaseAuthErrorCodes } from "../helpers/firebase-helper";
 
 const mapQuerySnapshot = (querySnapshot) => {
-    return querySnapshot.docs.map((doc) => ({ docId: doc.id, ...doc.data() }));
+    return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 }
 
-const addNewRecordToFirestoreAsync = async (collectionName, recordObject) => {
-    await addDoc(collection(firestore, collectionName), recordObject);
+const addNewRecordToFirestoreAsync = async (collectionName, recordToAdd) => {
+    await addDoc(collection(firestore, collectionName), recordToAdd);
+}
+
+const updateFirebaseRecordAsync = async (collectionName, recordToUpdateId, updateRecordData) => {
+    await updateDoc(doc(firestore, collectionName, recordToUpdateId), updateRecordData);
+}
+
+const deleteFirebaseRecordAsync = async (collectionName, recordToDeleteId) => {
+    await deleteDoc(doc(firestore, collectionName, recordToDeleteId));
 }
 
 const handleFirebaseAuthError = (error, notificationMessage, errorNotificationHandler) => {
@@ -65,5 +73,7 @@ export {
     firebaseAuthErrorCodes,
     mapQuerySnapshot,
     addNewRecordToFirestoreAsync,
+    updateFirebaseRecordAsync,
+    deleteFirebaseRecordAsync,
     handleFirebaseAuthError
 }

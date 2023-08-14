@@ -1,13 +1,10 @@
 
 import { useEffect, useState } from "react";
 
-import { MenuFoldOutlined, MenuUnfoldOutlined, UploadOutlined, UserOutlined, VideoCameraOutlined } from '@ant-design/icons';
+import { MenuFoldOutlined, MenuUnfoldOutlined, UploadOutlined, VideoCameraOutlined } from '@ant-design/icons';
 
 import { Layout, Menu, Button, theme } from 'antd';
-import { useLocation, useNavigate, Route, Routes, Outlet } from "react-router-dom";
-import GalleriesManagement from "./galleries-management/GalleriesManagement";
-import ArtFieldsManagement from "./art-fields-management/ArtFieldsManagement";
-import ArtMovementsManagement from "./art-movements-management/ArtMovementsManagement";
+import { useLocation, useNavigate, Outlet } from "react-router-dom";
 
 const { Header, Sider, Content } = Layout;
 
@@ -15,7 +12,7 @@ export default function Dashboard() {
     const navigate = useNavigate();
     const location = useLocation();
 
-    const [selectedKeys, setSelectedKeys] = useState("/dashboard");
+    const [selectedKeys, setSelectedKeys] = useState("/dashboard/art-fields-management");
     const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
     useEffect(() => {
@@ -39,9 +36,10 @@ export default function Dashboard() {
                     onClick={(menuItem) => {
                         navigate(menuItem.key)
                     }}
+                    defaultSelectedKeys={selectedKeys}
                     items={[
                         {
-                            key: '/dashboard/art-fields-management',
+                            key: '/dashboard/fields-management',
                             icon: <VideoCameraOutlined />,
                             label: 'Art Fields Management'
                         },
@@ -84,7 +82,6 @@ export default function Dashboard() {
                     minHeight: 280, 
                     background: colorBgContainer }}
                 >
-                    <div>Content</div>
                     <Outlet />
                 </Content>
             </Layout>

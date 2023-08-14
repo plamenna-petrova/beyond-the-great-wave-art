@@ -1,10 +1,7 @@
 import { useState } from "react"
-
 import { Button, Form, Modal, Input, Space, Table, Row, Col, notification } from "antd";
-
 import { SearchOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
-
-import { createFieldAsync, deleteFieldAsync, fieldExistsAsync, getAllFieldsAsync, updateFieldAsync } from "../../../services/art-fields-service";
+import { createFieldAsync, deleteFieldAsync, fieldExistsAsync, getAllFieldsAsync, updateFieldAsync } from "../../../services/fields-service";
 import { useRef } from "react";
 import Highlighter from "react-highlight-words";
 import { useEffect } from "react";
@@ -33,6 +30,10 @@ export default function FieldsManagement() {
     const handleCancelAddOrEditFieldModal = () => {
         addOrEditFieldForm.resetFields();
         setIsAddOrEditFieldModalOpened(false);
+
+        if (fieldToEditId) {
+            setFieldToEditId(null);
+        }
     }
 
     const addOrEditFieldModalFormLayout = {
@@ -99,7 +100,7 @@ export default function FieldsManagement() {
             >
                 <Input
                     ref={fieldSearchInput}
-                    placeholder={`Search ${dataIndex}`}
+                    placeholder={`Search by ${dataIndex}`}
                     value={selectedKeys[0]}
                     onChange={(event) => setSelectedKeys(event.target.value ? [event.target.value] : [])}
                     onPressEnter={() => handleFieldSearch(selectedKeys, confirm, dataIndex)}
@@ -134,7 +135,7 @@ export default function FieldsManagement() {
                         size="small"
                         onClick={() => {
                             confirm({
-                                closeDropdown: false
+                                closeDropdown: true
                             });
                             setFieldSearchText(selectedKeys[0]);
                             setFieldSearchedColumn(dataIndex);
@@ -234,15 +235,15 @@ export default function FieldsManagement() {
     return (
         <div className="fields-management-wrapper">
             {notificationContextHolder}
-            <Row style={{ marginBottom: 20 + 'px' }}>
+            <Row style={{ marginBottom: 20 }}>
                 <Col span={12} style={{ textAlign: 'left' }}>
-                    <Button type="primary" onClick={() => openAddOrEditFieldModal()}>
+                    <Button type="primary" onClick={openAddOrEditFieldModal}>
                         Add New Field
                     </Button>
                 </Col>
                 <Col span={12} style={{ textAlign: 'left' }}>
-                    <Button type="dashed" style={{ marginRight: 20 + 'px' }}>Export</Button>
-                    <Button type="dashed">Import</Button>
+                    <Button type="dashed" style={{ marginRight: 20 }}>Export Fields</Button>
+                    <Button type="dashed">Import Fields</Button>
                 </Col> 
             </Row>
             <Modal
@@ -266,15 +267,15 @@ export default function FieldsManagement() {
                         rules={[
                             {
                                 required: true,
-                                message: 'The art field name is required'
+                                message: 'The field name is required'
                             },
                             {
                                 min: 6,
-                                message: 'The art field must be at least 6 characters long'
+                                message: 'The field name must be at least 6 characters long'
                             },
                             {
                                 max: 30,
-                                message: 'The art field cannot be longre than 30 characters'
+                                message: 'The field name cannot be longer than 30 characters'
                             }
                         ]}
                     >
@@ -286,7 +287,11 @@ export default function FieldsManagement() {
                 columns={fieldsManagementTableColumns}
                 dataSource={fieldsToManage}
                 loading={isFieldsDataLoading}
-                pagination={{ defaultPageSize: 10, showSizeChanger: true, pageSizeOptions: ['10', '20', '30'] }}
+                pagination={{ 
+                    defaultPageSize: 10, 
+                    showSizeChanger: true, 
+                    pageSizeOptions: ['10', '20', '30'] 
+                }}
             />
         </div>
     )

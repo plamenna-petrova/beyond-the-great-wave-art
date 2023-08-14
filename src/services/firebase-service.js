@@ -1,23 +1,47 @@
 
-import { addDoc, collection, deleteDoc, doc, updateDoc } from "firebase/firestore"
+import { addDoc, collection, deleteDoc, doc, getDocs, getDoc, updateDoc, query, where } from "firebase/firestore"
 import { firestore } from "../firebase"
 
 import { firebaseAuthErrorCodes } from "../helpers/firebase-helper";
 
-const mapQuerySnapshot = (querySnapshot) => {
-    return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+const getAllFirestoreRecordsAsync = async (collectionName) => {
+    const allFirestoreRecordsQuery = query(collection(firestore, collectionName));
+    const allFirestoreRecordsQuerySnapshot = await getDocs(allFirestoreRecordsQuery);
+    const mappedAllFirestoreRecordsQuerySnapshot = mapQuerySnapshot(allFirestoreRecordsQuerySnapshot);
+    return mappedAllFirestoreRecordsQuerySnapshot;
+}
+
+const getFirestoreRecordByIdAsync = async (collectionName, id) => {
+    const firestoreRecordByIdReference = doc(firestore, collectionName, id);
+    const firestoreRecordByIdSnapshot = await getDoc(firestoreRecordByIdReference);
+    const firestoreRecordByIdData = firestoreRecordByIdSnapshot.exists() ? firestoreRecordByIdSnapshot.data() : null;
+    return { id, ...firestoreRecordByIdData };
 }
 
 const addNewRecordToFirestoreAsync = async (collectionName, recordToAdd) => {
     await addDoc(collection(firestore, collectionName), recordToAdd);
 }
 
-const updateFirebaseRecordAsync = async (collectionName, recordToUpdateId, updateRecordData) => {
+const updateFirestoreRecordAsync = async (collectionName, recordToUpdateId, updateRecordData) => {
     await updateDoc(doc(firestore, collectionName, recordToUpdateId), updateRecordData);
 }
 
-const deleteFirebaseRecordAsync = async (collectionName, recordToDeleteId) => {
+const deleteFirestoreRecordAsync = async (collectionName, recordToDeleteId) => {
     await deleteDoc(doc(firestore, collectionName, recordToDeleteId));
+}
+
+const firestoreRecordExistsAsync = async (collectionName, targetPropertyName, valueToCheck) => {
+    const firestoreRecordExistsQuery = query(
+        collection(firestore, collectionName), 
+        where(targetPropertyName, "==", valueToCheck)
+    );
+    const firestoreRecordExistsQuerySnapshot = await getDocs(firestoreRecordExistsQuery);
+    const firestoreRecordExistsDocs = firestoreRecordExistsQuerySnapshot.docs;
+    return firestoreRecordExistsDocs.shift();
+}
+
+const mapQuerySnapshot = (querySnapshot) => {
+    return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
 }
 
 const handleFirebaseAuthError = (error, notificationMessage, errorNotificationHandler) => {
@@ -72,8 +96,11 @@ const getFirebaseAuthErrorInfo = (receivedFirebaseErrorCode) => {
 export {
     firebaseAuthErrorCodes,
     mapQuerySnapshot,
+    getAllFirestoreRecordsAsync,
+    getFirestoreRecordByIdAsync,
     addNewRecordToFirestoreAsync,
-    updateFirebaseRecordAsync,
-    deleteFirebaseRecordAsync,
+    updateFirestoreRecordAsync,
+    deleteFirestoreRecordAsync,
+    firestoreRecordExistsAsync,
     handleFirebaseAuthError
 }

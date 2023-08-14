@@ -1,7 +1,7 @@
 
 import { useEffect, useState } from "react";
 
-import { MenuFoldOutlined, MenuUnfoldOutlined, UploadOutlined, VideoCameraOutlined } from '@ant-design/icons';
+import { MenuFoldOutlined, MenuUnfoldOutlined } from '@ant-design/icons';
 
 import { Layout, Menu, Button, theme } from 'antd';
 import { useLocation, useNavigate, Outlet } from "react-router-dom";
@@ -40,22 +40,22 @@ export default function Dashboard() {
                     items={[
                         {
                             key: '/dashboard/fields-management',
-                            icon: <VideoCameraOutlined />,
-                            label: 'Art Fields Management'
+                            label: 'Fields'
+                        },
+                        {
+                            key: '/dashboard/genres-management',
+                            label: 'Genres'
                         },
                         {
                             key: '/dashboard/art-movements-management',
-                            icon: <UploadOutlined />,
-                            label: 'Art Movements Management'
+                            label: 'Art Movements'
                         },
                         {
                             key: '/dashboard/artists-management',
-                            icon: <VideoCameraOutlined />,
                             label: 'Artists'
                         },
                         {
                             key: '/dashboard/galleries-management',
-                            icon: <UploadOutlined />,
                             label: 'Galleries'
                         }
                     ]}

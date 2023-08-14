@@ -24,6 +24,7 @@ import FieldsManagement from "./pages/dashboard/fields-management/FieldsManageme
 import ArtMovementsManagement from "./pages/dashboard/art-movements-management/ArtMovementsManagement";
 import ArtistsManagement from "./pages/dashboard/artists-management/ArtistsManagement";
 import GalleriesManagement from "./pages/dashboard/galleries-management/GalleriesManagement";
+import GenresManagement from "./pages/dashboard/genres-management/GenresManagement";
 
 
 export default function App() {
@@ -45,6 +46,7 @@ export default function App() {
                 <Route path="/forgot-password" element={<ForgotPassword />}></Route>
                 <Route path="dashboard" element={<Dashboard />}>
                     <Route path="fields-management" element={<FieldsManagement />}></Route>
+                    <Route path="genres-management" element={<GenresManagement />}></Route>
                     <Route path="art-movements-management" element={<ArtMovementsManagement />}></Route>
                     <Route path="artists-management" element={<ArtistsManagement />}></Route>
                     <Route path="galleries-management" element={<GalleriesManagement />}></Route>

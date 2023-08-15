@@ -1,8 +1,10 @@
 import { Form, Modal, notification, Input, Button, Space, Table, Row, Col } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { createGenreAsync, deleteGenreAsync, genreExistsAsync, getAllGenresAsync, updateGenreAsync } from "../../../services/genres-service";
-import { ExclamationCircleOutlined, SearchOutlined } from "@ant-design/icons";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
+import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
+import { maxLengthFieldErrorMessage, minLengthFieldErrorMessage, requiredFieldErrorMessage } from "../../../helpers/global-constants";
 
 export default function GenresManagement() {
     const [genresToManage, setGenresToManage] = useState([]);
@@ -13,7 +15,7 @@ export default function GenresManagement() {
     const [api, notificationContextHolder] = notification.useNotification();
     const [genreSearchText, setGenreSearchText] = useState('');
     const [genreSearchedColumn, setGenreSearchedColumn] = useState('');
-    const genreSearchInput = useRef(null);
+    const genreSearchInput = useRef();
     const { confirm } = Modal;
 
     const openAddOrEditGenreModal = (currentGenre) => {
@@ -47,8 +49,6 @@ export default function GenresManagement() {
         const { genre } = addOrEditGenreFormValues;
 
         if (!genreToEditId) {
-            console.log('here');
-
             if (await genreExistsAsync(genre.name)) {
                 openGenresManagementNotificationWithIcon('warning', 'Oops', 'Such genre already exists!');
                 return;
@@ -99,6 +99,7 @@ export default function GenresManagement() {
                 onKeyDown={(event) => event.stopPropagation()}
             >
                 <Input
+                    id={`genreSearchInput_${dataIndex}`}
                     ref={genreSearchInput}
                     placeholder={`Search by ${dataIndex}`}
                     value={selectedKeys[0]}
@@ -165,11 +166,43 @@ export default function GenresManagement() {
         onFilter: (value, record) => 
             record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
         onFilterDropdownOpenChange: (visible) => {
+            console.log('is visible');
+            console.log(visible);
+
+            const element = document.getElementById(`genreSearchInput_${dataIndex}`);
+
+            if (element != null) {
+                const fullPlaceholderText = element.placeholder;
+                
+                let i = 0;
+                let placeholder = "";
+
+                const type = () => {
+                    if (placeholder === fullPlaceholderText) {
+                        placeholder = "";
+                        i = 0;
+                    }
+
+                    placeholder += fullPlaceholderText.charAt(i);
+                    element.setAttribute("placeholder", placeholder);
+                    i++;
+                    setTimeout(type, 120);
+                }
+
+                if (visible) {
+                    type();
+                } else {
+                    clearTimeout(type);
+                    placeholder = "";
+                    i = 0;
+                }
+            }
+
             if (visible) {
                 setTimeout(() => genreSearchInput.current?.select(), 100);
             }
         },
-        render: (genreName) =>
+        render: (genreValue) =>
             genreSearchedColumn === dataIndex ? (
                 <Highlighter
                     highlightStyle={{
@@ -178,10 +211,10 @@ export default function GenresManagement() {
                     }}
                     searchWords={[genreSearchText]}
                     autoEscape
-                    textToHighlight={genreName ? genreName.toString() : ''} 
+                    textToHighlight={genreValue ? genreValue.toString() : ''} 
                 />
             ) : (
-               genreName 
+               genreValue
             )    
     })
 
@@ -267,15 +300,15 @@ export default function GenresManagement() {
                         rules={[
                             {
                                 required: true,
-                                message: 'The genre name is required'
+                                message: requiredFieldErrorMessage('genre', 'name')
                             },
                             {
                                 min: 4,
-                                message: 'The genre name must be at least 4 characters long'
+                                message: minLengthFieldErrorMessage('genre', 'name', 4)
                             },
                             {
                                 max: 35,
-                                message: 'The genre name cannot be longer than 35 symbols'
+                                message: maxLengthFieldErrorMessage('genre', 'name', 35)
                             }
                         ]}
                     >

@@ -169,8 +169,6 @@ export default function Login() {
                 dispatch(setLoadingSpinner(false));
             }, 500);
         } else {
-            console.log('HERE IN EFFECT');
-
             if (currentUser.isNewUser) {
                 setTimeout(() => {
                     dispatch(setLoadingSpinner(false));

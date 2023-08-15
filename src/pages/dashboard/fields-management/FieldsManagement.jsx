@@ -1,10 +1,12 @@
 import { useState } from "react"
 import { Button, Form, Modal, Input, Space, Table, Row, Col, notification } from "antd";
-import { SearchOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { createFieldAsync, deleteFieldAsync, fieldExistsAsync, getAllFieldsAsync, updateFieldAsync } from "../../../services/fields-service";
 import { useRef } from "react";
-import Highlighter from "react-highlight-words";
 import { useEffect } from "react";
+import { SearchOutlined } from "@ant-design/icons";
+import Highlighter from "react-highlight-words";
+import { maxLengthFieldErrorMessage, minLengthFieldErrorMessage, requiredFieldErrorMessage } from "../../../helpers/global-constants";
 
 export default function FieldsManagement() {
     const [fieldsToManage, setFieldsToManage] = useState([]);
@@ -169,7 +171,7 @@ export default function FieldsManagement() {
                 setTimeout(() => fieldSearchInput.current?.select(), 100);
             }
         },
-        render: (fieldName) =>
+        render: (fieldValue) =>
             fieldSearchedColumn === dataIndex ? (
                 <Highlighter
                     highlightStyle={{
@@ -178,10 +180,10 @@ export default function FieldsManagement() {
                     }}
                     searchWords={[fieldSearchText]}
                     autoEscape
-                    textToHighlight={fieldName ? fieldName.toString() : ''}
+                    textToHighlight={fieldValue ? fieldValue.toString() : ''}
                 />
             ) : (
-                fieldName
+                fieldValue
             )
     })
 
@@ -267,15 +269,15 @@ export default function FieldsManagement() {
                         rules={[
                             {
                                 required: true,
-                                message: 'The field name is required'
+                                message: requiredFieldErrorMessage('field', 'name')
                             },
                             {
                                 min: 6,
-                                message: 'The field name must be at least 6 characters long'
+                                message: minLengthFieldErrorMessage('field', 'name', 6)
                             },
                             {
                                 max: 30,
-                                message: 'The field name cannot be longer than 30 characters'
+                                message: maxLengthFieldErrorMessage('field', 'name', 30)
                             }
                         ]}
                     >

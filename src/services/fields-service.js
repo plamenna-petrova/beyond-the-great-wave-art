@@ -1,5 +1,3 @@
-import { collection, getDoc, getDocs, query, doc, where } from "firebase/firestore";
-import { firestore } from "../firebase";
 import { 
     addNewRecordToFirestoreAsync, 
     deleteFirestoreRecordAsync, 

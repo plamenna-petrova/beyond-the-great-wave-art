@@ -1,4 +1,4 @@
-import { Button, Col, DatePicker, Form, Input, Modal, notification, Row, Space, Table } from "antd";
+import { Button, Col, DatePicker, Form, Input, Modal, notification, Row, Select, Space, Table } from "antd";
 import { useState, useRef } from "react"
 import { artMovementExistsAsync, createArtMovementAsync, updateArtMovementAsync, getAllArtMovementsAsync, deleteArtMovementAsync } from "../../../services/art-movements-service";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
@@ -8,6 +8,22 @@ import { useSelector } from "react-redux/es/exports";
 import TextArea from "antd/es/input/TextArea";
 import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
+
+export const artMovementPeriods = [
+    'Ancient Egyptian Art',
+    'Ancient Greek Art',
+    'Western Medieval Art',
+    'Western Renaissance Art',
+    'Western Post Renaissance Art',
+    'Modern Art',
+    'Contemporary Art',
+    'Chinese Art',
+    'Korean Art',
+    'Japanese Art',
+    'Islamic Art',
+    'Native Art',
+    'Pre-Columbian Art'
+]
 
 export default function ArtMovementsManagement() {
     const [artMovementsToManage, setArtMovementsToManage] = useState([]);
@@ -21,6 +37,7 @@ export default function ArtMovementsManagement() {
     const artMovementSearchInput = useRef(null);
     const { confirm, info } = Modal;
     const { RangePicker } = DatePicker;
+    const { Option } = Select;
     const currentUser = useSelector((state) => state.auth.currentUser);
 
     const openAddOrEditArtMovementModal = (currentArtMovement) => {
@@ -51,15 +68,19 @@ export default function ArtMovementsManagement() {
     }
 
     const onAddOrEditArtMovementFormFinish = async (addOrEditArtMovementFormValues) => {
-        const { artMovement: { name, periodRange, description } } = addOrEditArtMovementFormValues;
+        console.log('form values');
+        console.log(addOrEditArtMovementFormValues);
 
+        const { artMovement: { name, period, periodRange, description } } = addOrEditArtMovementFormValues;
         const [startPeriodYear, endPeriodYear] = periodRange;
 
         const artMovementToManage = {
             name,
+            period,
             startPeriodYear: startPeriodYear.$y,
             endPeriodYear: endPeriodYear ? endPeriodYear.$y : null,
-            description
+            description,
+            imageUrl: null
         }
 
         if (!artMovementToEditId) {
@@ -73,7 +94,10 @@ export default function ArtMovementsManagement() {
             artMovementToManage.modifiedOn = null;
             artMovementToManage.modifiedBy = null;
 
-            // await createArtMovementAsync(artMovementToManage);
+            console.log('art movement to manage');
+            console.log(artMovementToManage);
+
+            await createArtMovementAsync(artMovementToManage);
         } else {
             artMovementToManage.modifiedOn = new Date().getTime();
             artMovementToManage.modifiedBy = currentUser.username;
@@ -81,7 +105,7 @@ export default function ArtMovementsManagement() {
             await updateArtMovementAsync(artMovementToEditId, artMovementToManage);
             setArtMovementToEditId(null);
         }
-        
+
         setIsAddOrEditArtMovementModalOpened(false);
         addOrEditArtMovementForm.resetFields();
         loadArtMovementsData();
@@ -123,7 +147,7 @@ export default function ArtMovementsManagement() {
                 <Input
                     ref={artMovementSearchInput}
                     placeholder={`Search by ${dataIndex}`}
-                    value={selectedKeys[0]} 
+                    value={selectedKeys[0]}
                     onChange={(event) => setSelectedKeys(event.target.value ? [event.target.value] : [])}
                     onPressEnter={() => handleArtMovementSearch(selectedKeys, confirm, dataIndex)}
                     style={{
@@ -181,7 +205,7 @@ export default function ArtMovementsManagement() {
             <SearchOutlined
                 style={{
                     color: filtered ? '#1677ff' : undefined
-                }} 
+                }}
             />
         ),
         onFilter: (value, record) =>
@@ -257,6 +281,19 @@ export default function ArtMovementsManagement() {
         }
     ]
 
+    const fillArtMovementsPeriodsOptions = () => {
+        const artMovementsPeriodsOptions = [];
+
+        for (let i = 0; i < artMovementPeriods.length; i++) {
+            artMovementsPeriodsOptions.push({
+                value: artMovementPeriods[i],
+                label: artMovementPeriods[i]
+            });
+        }
+
+        return artMovementsPeriodsOptions;
+    }
+
     const loadArtMovementsData = async () => {
         setIsArtMovementsDataLoading(true);
         const allArtMovementsToLoad = await getAllArtMovementsAsync();
@@ -269,12 +306,12 @@ export default function ArtMovementsManagement() {
     useEffect(() => {
         loadArtMovementsData();
     }, []);
- 
+
     return (
         <>
             <div className="art-movements-management-wrapper">
                 {notificationContextHolder}
-                <Row style={{ marginBottom: 20}}>
+                <Row style={{ marginBottom: 20 }}>
                     <Col span={12} style={{ textAlign: 'left' }}>
                         <Button type="primary" onClick={openAddOrEditArtMovementModal}>
                             Add New Art Movement
@@ -291,6 +328,8 @@ export default function ArtMovementsManagement() {
                     open={isAddOrEditArtMovementModalOpened}
                     onOk={addOrEditArtMovementForm.submit}
                     onCancel={handleCancelAddOrEditArtMovementModal}
+                    style={{ marginTop: 100 }}
+                    bodyStyle={{ overflowY: 'auto', maxHeight: 'calc(100vh - 250px)' }}
                 >
                     <Form
                         {...addOrEditArtMovementFormLayout}
@@ -321,10 +360,31 @@ export default function ArtMovementsManagement() {
                             <Input />
                         </Form.Item>
                         <Form.Item
-                            name={['artMovement', 'periodRange']}
+                            name={['artMovement', 'period']}
                             label="Period"
                         >
-                            <RangePicker picker="year" allowEmpty={[false, true]}/>
+                            <Select value={artMovementPeriods[0]}>
+                                {fillArtMovementsPeriodsOptions().map((artMovementPeriod, index) => (
+                                    <Option
+                                        key={`ArtMovementPeriod#${index + 1}`}
+                                        value={artMovementPeriod.value}
+                                    >
+                                        {`${artMovementPeriod.label}`}
+                                    </Option>
+                                ))}
+                            </Select>
+                        </Form.Item>
+                        <Form.Item
+                            name={['artMovement', 'periodRange']}
+                            label="Period Span"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: 'Please enter the span of art movement period'
+                                }
+                            ]}
+                        >
+                            <RangePicker picker="year" allowEmpty={[false, true]} />
                         </Form.Item>
                         <Form.Item
                             name={['artMovement', 'description']}
@@ -344,9 +404,9 @@ export default function ArtMovementsManagement() {
                                 }
                             ]}
                         >
-                            <TextArea 
-                                placeholder="Enter art movement description" 
-                                rows={4}
+                            <TextArea
+                                placeholder="Enter art movement description"
+                                rows={10}
                             />
                         </Form.Item>
                     </Form>
@@ -359,7 +419,7 @@ export default function ArtMovementsManagement() {
                         defaultPageSize: 10,
                         showSizeChanger: true,
                         pageSizeOptions: ['10', '20', '30']
-                    }} 
+                    }}
                 />
             </div>
         </>

@@ -166,38 +166,6 @@ export default function GenresManagement() {
         onFilter: (value, record) => 
             record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
         onFilterDropdownOpenChange: (visible) => {
-            console.log('is visible');
-            console.log(visible);
-
-            const element = document.getElementById(`genreSearchInput_${dataIndex}`);
-
-            if (element != null) {
-                const fullPlaceholderText = element.placeholder;
-                
-                let i = 0;
-                let placeholder = "";
-
-                const type = () => {
-                    if (placeholder === fullPlaceholderText) {
-                        placeholder = "";
-                        i = 0;
-                    }
-
-                    placeholder += fullPlaceholderText.charAt(i);
-                    element.setAttribute("placeholder", placeholder);
-                    i++;
-                    setTimeout(type, 120);
-                }
-
-                if (visible) {
-                    type();
-                } else {
-                    clearTimeout(type);
-                    placeholder = "";
-                    i = 0;
-                }
-            }
-
             if (visible) {
                 setTimeout(() => genreSearchInput.current?.select(), 100);
             }
@@ -233,7 +201,7 @@ export default function GenresManagement() {
         {
             title: 'Name',
             dataIndex: 'name',
-            key: 'name',
+            key: 'genre-name',
             width: '50%',
             ...getGenresColumnSearchProps('name'),
             sorter: (a, b) => a.name.localeCompare(b.name),
@@ -241,7 +209,7 @@ export default function GenresManagement() {
         },
         {
             title: 'Actions',
-            key: 'actions',
+            key: 'genre-actions',
             width: '50%',
             render: (_, genre) => (
                 <Space size="middle">

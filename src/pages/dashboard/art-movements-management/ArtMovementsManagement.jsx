@@ -40,11 +40,10 @@ export default function ArtMovementsManagement() {
     const { RangePicker } = DatePicker;
     const { Option } = Select;
     const currentUser = useSelector((state) => state.auth.currentUser);
+    const [filteredArtMovementsInfo, setFilteredArtMovementsInfo] = useState({});
 
     const openAddOrEditArtMovementModal = (currentArtMovement) => {
         if (currentArtMovement) {
-            console.log('current art movement');
-            console.log(currentArtMovement);
 
             addOrEditArtMovementForm.setFieldsValue({ 
                 artMovement: {
@@ -83,17 +82,14 @@ export default function ArtMovementsManagement() {
 
     const addOrEditArtMovementFormLayout = {
         labelCol: {
-            span: 8
+            span: 6
         },
         wrapperCol: {
-            span: 16
+            span: 18
         }
     }
 
     const onAddOrEditArtMovementFormFinish = async (addOrEditArtMovementFormValues) => {
-        console.log('form values');
-        console.log(addOrEditArtMovementFormValues);
-
         const { artMovement: { name, period, periodRange, description } } = addOrEditArtMovementFormValues;
         const [startPeriodYear, endPeriodYear] = periodRange;
 
@@ -116,9 +112,6 @@ export default function ArtMovementsManagement() {
             artMovementToManage.createdBy = currentUser.username;
             artMovementToManage.modifiedOn = null;
             artMovementToManage.modifiedBy = null;
-
-            console.log('art movement to manage');
-            console.log(artMovementToManage);
 
             await createArtMovementAsync(artMovementToManage);
         } else {
@@ -164,7 +157,7 @@ export default function ArtMovementsManagement() {
                 style={{
                     padding: 8
                 }}
-                onKeyDown={(event) => event.stopPropagation()}
+                onKeyDown={(event) => { event.stopPropagation(); }}
             >
                 <Input
                     ref={artMovementSearchInput}
@@ -231,7 +224,7 @@ export default function ArtMovementsManagement() {
             />
         ),
         onFilter: (value, record) =>
-            record[dataIndex].toString().toLowercase().includes(value.toLowercase()),
+            record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
         onFilterDropdownOpenChange: (visible) => {
             if (visible) {
                 setTimeout(() => artMovementSearchInput.current?.select())
@@ -264,6 +257,10 @@ export default function ArtMovementsManagement() {
         setArtMovementSearchText('');
     }
 
+    const handleFilteredArtMovementsInfoChange = (_, filters) => {
+        setFilteredArtMovementsInfo(filters);
+    };
+
     const artMovementsManagementTableColumns = [
         {
             title: 'Name',
@@ -271,6 +268,7 @@ export default function ArtMovementsManagement() {
             key: 'name',
             width: '20%',
             ...getArtMovementsColumnSearchProps('name'),
+            filteredValue: filteredArtMovementsInfo.name || null,
             sorter: (a, b) => a.name.localeCompare(b.name),
             sortDirections: ['ascend', 'descend']
         },
@@ -279,7 +277,9 @@ export default function ArtMovementsManagement() {
             dataIndex: 'period',
             key: 'period',
             width: '20%',
-            ...getArtMovementsColumnSearchProps('period'),
+            filters: [...artMovementPeriods.map((amp) => ({ text: amp, value: amp }))],
+            filteredValue: filteredArtMovementsInfo.period || null,
+            onFilter: (value, artMovement) => artMovement.period.includes(value),
             sorter: (a, b) => a.period.localeCompare(b.period),
             sortDirections: ['ascend', 'descend'],
             render: (_, { period }) => {
@@ -321,6 +321,7 @@ export default function ArtMovementsManagement() {
             key: 'startPeriodYear',
             width: '15%',
             ...getArtMovementsColumnSearchProps('startPeriodYear'),
+            filteredValue: filteredArtMovementsInfo.startPeriodYear || null,
             sorter: (a, b) => a.startPeriodYear - b.startPeriodYear,
             sortDirections: ['ascend', 'descend'],
             render: (_, { startPeriodYear }) => (<Tag color='magenta'>{startPeriodYear}</Tag>)
@@ -331,10 +332,11 @@ export default function ArtMovementsManagement() {
             key: 'endPeriodYear',
             width: '15%',
             ...getArtMovementsColumnSearchProps('endPeriodYear'),
+            filteredValue: filteredArtMovementsInfo.endPeriodYear || null,
             sorter: (a, b) => a.endPeriodYear - b.endPeriodYear,
             sortDirections: ['ascend', 'descend'],
-            render: (_, { endPeriodYear }) => endPeriodYear ?
-                (<Tag color='purple'>{endPeriodYear}</Tag>) : (<Tag color='volcano'>NOT SPECIFIED</Tag>)
+            render: (_, { endPeriodYear }) => endPeriodYear 
+                ? (<Tag color='magenta'>{endPeriodYear}</Tag>) : (<Tag color='volcano'>NOT SPECIFIED</Tag>)
         },
         {
             title: 'Actions',
@@ -349,19 +351,6 @@ export default function ArtMovementsManagement() {
             )
         }
     ]
-
-    const fillArtMovementsPeriodsOptions = () => {
-        const artMovementsPeriodsOptions = [];
-
-        for (let i = 0; i < artMovementPeriods.length; i++) {
-            artMovementsPeriodsOptions.push({
-                value: artMovementPeriods[i],
-                label: artMovementPeriods[i]
-            });
-        }
-
-        return artMovementsPeriodsOptions;
-    }
 
     const loadArtMovementsData = async () => {
         setIsArtMovementsDataLoading(true);
@@ -417,12 +406,12 @@ export default function ArtMovementsManagement() {
                                     message: requiredFieldErrorMessage('art movement', 'name')
                                 },
                                 {
-                                    min: 8,
-                                    message: minLengthFieldErrorMessage('art movement', 'name', 8)
+                                    min: 6,
+                                    message: minLengthFieldErrorMessage('art movement', 'name', 6)
                                 },
                                 {
-                                    max: 32,
-                                    message: maxLengthFieldErrorMessage('art movement', 'name', 32)
+                                    max: 45,
+                                    message: maxLengthFieldErrorMessage('art movement', 'name', 45)
                                 }
                             ]}
                         >
@@ -433,12 +422,12 @@ export default function ArtMovementsManagement() {
                             label="Period"
                         >
                             <Select value={artMovementPeriods[0]}>
-                                {fillArtMovementsPeriodsOptions().map((artMovementPeriod, index) => (
+                                {artMovementPeriods.map((artMovementPeriod, index) => (
                                     <Option
                                         key={`ArtMovementPeriod#${index + 1}`}
-                                        value={artMovementPeriod.value}
+                                        value={artMovementPeriod}
                                     >
-                                        {`${artMovementPeriod.label}`}
+                                        {`${artMovementPeriod}`}
                                     </Option>
                                 ))}
                             </Select>
@@ -464,8 +453,8 @@ export default function ArtMovementsManagement() {
                                     message: requiredFieldErrorMessage('art movement', 'description')
                                 },
                                 {
-                                    min: 100,
-                                    message: minLengthFieldErrorMessage('art movement', 'description', 100)
+                                    min: 10,
+                                    message: minLengthFieldErrorMessage('art movement', 'description', 10)
                                 },
                                 {
                                     max: 1500,
@@ -476,6 +465,8 @@ export default function ArtMovementsManagement() {
                             <TextArea
                                 placeholder="Enter art movement description"
                                 rows={10}
+                                showCount
+                                style={{ resize: 'none' }}
                             />
                         </Form.Item>
                     </Form>
@@ -489,6 +480,7 @@ export default function ArtMovementsManagement() {
                         showSizeChanger: true,
                         pageSizeOptions: ['10', '20', '30']
                     }}
+                    onChange={handleFilteredArtMovementsInfoChange}
                 />
             </div>
         </>

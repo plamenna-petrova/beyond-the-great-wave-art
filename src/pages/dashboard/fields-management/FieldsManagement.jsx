@@ -84,11 +84,10 @@ export default function FieldsManagement() {
         })
     }
 
-    const openFieldsManagementNotificationWithIcon = (type, message, description, duration) => {
+    const openFieldsManagementNotificationWithIcon = (type, message, description) => {
         api[type]({
             message,
-            description,
-            duration: duration ? duration : 0
+            description
         })
     }
 

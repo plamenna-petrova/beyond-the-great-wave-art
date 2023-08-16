@@ -168,11 +168,10 @@ export default function Register() {
         }
     }
 
-    const openRegistrationNotificationWithIcon = (type, message, description, duration) => {
+    const openRegistrationNotificationWithIcon = (type, message, description) => {
         api[type]({
             message,
-            description,
-            duration: duration ? duration : 0
+            description
         });
     }
 

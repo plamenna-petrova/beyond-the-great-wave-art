@@ -1,4 +1,4 @@
-import { Button, Col, DatePicker, Form, Input, Modal, notification, Row, Select, Space, Table } from "antd";
+import { Button, Col, DatePicker, Form, Input, Modal, notification, Row, Select, Space, Table, Tag } from "antd";
 import { useState, useRef } from "react"
 import { artMovementExistsAsync, createArtMovementAsync, updateArtMovementAsync, getAllArtMovementsAsync, deleteArtMovementAsync } from "../../../services/art-movements-service";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
@@ -8,6 +8,7 @@ import { useSelector } from "react-redux/es/exports";
 import TextArea from "antd/es/input/TextArea";
 import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
+import dayjs from "dayjs";
 
 export const artMovementPeriods = [
     'Ancient Egyptian Art',
@@ -42,8 +43,30 @@ export default function ArtMovementsManagement() {
 
     const openAddOrEditArtMovementModal = (currentArtMovement) => {
         if (currentArtMovement) {
-            addOrEditArtMovementForm.setFieldsValue({ artMovement: currentArtMovement });
+            console.log('current art movement');
+            console.log(currentArtMovement);
+
+            addOrEditArtMovementForm.setFieldsValue({ 
+                artMovement: {
+                    name: currentArtMovement.name,
+                    description: currentArtMovement.description,
+                    period: currentArtMovement.period,
+                    periodRange: [
+                        dayjs(new Date(currentArtMovement.startPeriodYear + 1, null, null, null, null, null)), 
+                        currentArtMovement.endPeriodYear ? 
+                            dayjs(new Date(currentArtMovement.endPeriodYear, null, null, null, null, null)) 
+                            : null
+                    ],
+                }
+            });
+            
             setArtMovementToEditId(currentArtMovement.id);
+        } else {
+            addOrEditArtMovementForm.setFieldsValue({
+                artMovement: {
+                    period: artMovementPeriods[0]
+                }
+            });
         }
 
         setIsAddOrEditArtMovementModalOpened(true);
@@ -80,7 +103,7 @@ export default function ArtMovementsManagement() {
             startPeriodYear: startPeriodYear.$y,
             endPeriodYear: endPeriodYear ? endPeriodYear.$y : null,
             description,
-            imageUrl: null
+            imageReference: null
         }
 
         if (!artMovementToEditId) {
@@ -128,11 +151,10 @@ export default function ArtMovementsManagement() {
         })
     }
 
-    const openArtMovementsManagementNotificationWithIcon = (type, message, description, duration) => {
+    const openArtMovementsManagementNotificationWithIcon = (type, message, description) => {
         api[type]({
             message,
-            description,
-            duration: duration ? duration : 0
+            description
         })
     }
 
@@ -247,34 +269,81 @@ export default function ArtMovementsManagement() {
             title: 'Name',
             dataIndex: 'name',
             key: 'name',
-            width: '25%',
+            width: '20%',
             ...getArtMovementsColumnSearchProps('name'),
             sorter: (a, b) => a.name.localeCompare(b.name),
             sortDirections: ['ascend', 'descend']
         },
         {
+            title: 'Period',
+            dataIndex: 'period',
+            key: 'period',
+            width: '20%',
+            ...getArtMovementsColumnSearchProps('period'),
+            sorter: (a, b) => a.period.localeCompare(b.period),
+            sortDirections: ['ascend', 'descend'],
+            render: (_, { period }) => {
+                switch (period) {
+                    case artMovementPeriods[0]:
+                        return (<Tag color='gold'>{period.toUpperCase()}</Tag>)
+                    case artMovementPeriods[1]:
+                        return (<Tag color='green'>{period.toUpperCase()}</Tag>)
+                    case artMovementPeriods[2]:
+                        return (<Tag color='blue'>{period.toUpperCase()}</Tag>)
+                    case artMovementPeriods[3]:
+                        return (<Tag color='red'>{period.toUppercase()}</Tag>)
+                    case artMovementPeriods[4]:
+                        return (<Tag color='orange'>{period.toUpperCase()}</Tag>)
+                    case artMovementPeriods[5]:
+                        return (<Tag color='purple'>{period.toUpperCase()}</Tag>)
+                    case artMovementPeriods[6]:
+                        return (<Tag color='cyan'>{period.toUpperCase()}</Tag>)
+                    case artMovementPeriods[7]:
+                        return (<Tag color='#b69576'>{period.toUpperCase()}</Tag>)
+                    case artMovementPeriods[8]:
+                        return (<Tag color='lime'>{period.toUpperCase()}</Tag>)
+                    case artMovementPeriods[9]:
+                        return (<Tag color='#ddb1b1'>{period.toUpperCase()}</Tag>)
+                    case artMovementPeriods[10]:
+                        return (<Tag color='#208796'>{period.toUpperCase()}</Tag>)
+                    case artMovementPeriods[11]:
+                        return (<Tag color='#fcc7a9'>{period.toUpperCase()}</Tag>)
+                    case artMovementPeriods[12]:
+                        return (<Tag color='#9c2729'>{period.toUpperCase()}</Tag>)
+                    default:
+                        break;
+                }
+            }
+        },
+        {
             title: 'Start Period Year',
             dataIndex: 'startPeriodYear',
             key: 'startPeriodYear',
-            width: '25%',
+            width: '15%',
             ...getArtMovementsColumnSearchProps('startPeriodYear'),
-            sorter: (a, b) => a.startPeriodYear - b.startPeriodYear
+            sorter: (a, b) => a.startPeriodYear - b.startPeriodYear,
+            sortDirections: ['ascend', 'descend'],
+            render: (_, { startPeriodYear }) => (<Tag color='magenta'>{startPeriodYear}</Tag>)
         },
         {
             title: 'End Period Year',
             dataIndex: 'endPeriodYear',
             key: 'endPeriodYear',
-            width: '25%',
+            width: '15%',
             ...getArtMovementsColumnSearchProps('endPeriodYear'),
-            sorter: (a, b) => a.endPeriodYear - b.endPeriodYear
+            sorter: (a, b) => a.endPeriodYear - b.endPeriodYear,
+            sortDirections: ['ascend', 'descend'],
+            render: (_, { endPeriodYear }) => endPeriodYear ?
+                (<Tag color='purple'>{endPeriodYear}</Tag>) : (<Tag color='volcano'>NOT SPECIFIED</Tag>)
         },
         {
             title: 'Actions',
             key: 'actions',
-            width: '25%',
+            width: '30%',
             render: (_, artMovement) => (
                 <Space size="middle">
-                    <Button onClick={() => openAddOrEditArtMovementModal(artMovement)}>Edit</Button>
+                    <Button>Details</Button>
+                    <Button type="primary" onClick={() => openAddOrEditArtMovementModal(artMovement)} ghost>Edit</Button>
                     <Button type="primary" danger onClick={() => onDeleteArtMovement(artMovement)}>Delete</Button>
                 </Space>
             )
@@ -313,7 +382,7 @@ export default function ArtMovementsManagement() {
                 {notificationContextHolder}
                 <Row style={{ marginBottom: 20 }}>
                     <Col span={12} style={{ textAlign: 'left' }}>
-                        <Button type="primary" onClick={openAddOrEditArtMovementModal}>
+                        <Button type="primary" onClick={() => openAddOrEditArtMovementModal()}>
                             Add New Art Movement
                         </Button>
                     </Col>

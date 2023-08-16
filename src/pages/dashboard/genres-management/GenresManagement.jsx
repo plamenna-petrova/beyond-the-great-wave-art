@@ -82,11 +82,10 @@ export default function GenresManagement() {
         })
     }
 
-    const openGenresManagementNotificationWithIcon = (type, message, description, duration) => {
+    const openGenresManagementNotificationWithIcon = (type, message, description) => {
         api[type]({
             message,
-            description,
-            duration: duration ? duration : 0
+            description
         })
     }
 

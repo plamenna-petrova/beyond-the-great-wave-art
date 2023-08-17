@@ -1,4 +1,4 @@
-import { Button, Col, DatePicker, Form, Input, Modal, notification, Row, Select, Space, Table, Tag } from "antd";
+import { Button, Col, DatePicker, Form, Input, List, Modal, notification, Row, Select, Space, Table, Tag, Typography } from "antd";
 import { useState, useRef } from "react"
 import { artMovementExistsAsync, createArtMovementAsync, updateArtMovementAsync, getAllArtMovementsAsync, deleteArtMovementAsync } from "../../../services/art-movements-service";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
@@ -41,24 +41,25 @@ export default function ArtMovementsManagement() {
     const { Option } = Select;
     const currentUser = useSelector((state) => state.auth.currentUser);
     const [filteredArtMovementsInfo, setFilteredArtMovementsInfo] = useState({});
+    const [selectedArtMovementsRowKeys, setSelectedArtMovementsRowKeys] = useState([]);
 
     const openAddOrEditArtMovementModal = (currentArtMovement) => {
         if (currentArtMovement) {
 
-            addOrEditArtMovementForm.setFieldsValue({ 
+            addOrEditArtMovementForm.setFieldsValue({
                 artMovement: {
                     name: currentArtMovement.name,
                     description: currentArtMovement.description,
                     period: currentArtMovement.period,
                     periodRange: [
-                        dayjs(new Date(currentArtMovement.startPeriodYear + 1, null, null, null, null, null)), 
-                        currentArtMovement.endPeriodYear ? 
-                            dayjs(new Date(currentArtMovement.endPeriodYear, null, null, null, null, null)) 
+                        dayjs(new Date(currentArtMovement.startPeriodYear + 1, null, null, null, null, null)),
+                        currentArtMovement.endPeriodYear ?
+                            dayjs(new Date(currentArtMovement.endPeriodYear, null, null, null, null, null))
                             : null
                     ],
                 }
             });
-            
+
             setArtMovementToEditId(currentArtMovement.id);
         } else {
             addOrEditArtMovementForm.setFieldsValue({
@@ -130,6 +131,61 @@ export default function ArtMovementsManagement() {
     const onAddOrEditArtMovementFormFinishFailed = (error) => {
         console.log('error', error);
     }
+
+    const onOpenArtMovementDetailsModal = (currentArtMovement) => {
+        const { name, createdOn, createdBy, modifiedOn, modifiedBy } = currentArtMovement;
+
+        const artMovementDetails = [
+            {
+                title: 'Created On',
+                value: createdOn
+            },
+            {
+                title: 'Created By',
+                value: createdBy
+            },
+            {
+                title: 'Modified On',
+                value: modifiedOn
+            },
+            {
+                title: 'Modified By',
+                value: modifiedBy
+            }
+        ]
+
+        info({
+            title: `${name}'s Details`,
+            content: (
+                <List
+                    size="small"
+                    bordered
+                    style={{ marginTop: 10 }}
+                    dataSource={artMovementDetails}
+                    renderItem={({title, value}) => (
+                        <List.Item key={title}>
+                            <List.Item.Meta
+                                title={<Typography.Text>{title}</Typography.Text>}
+                            />
+                            <div style={{ justifyContent: 'right' }}>
+                                {value
+                                    ? isValidTimestamp(value) > 0
+                                        ? <Typography.Text>{dayjs(new Date(value)).format('MMM D, YYYY h:mm A')}</Typography.Text>
+                                        : <Typography.Text>{value}</Typography.Text>
+                                    : <Typography.Text mark>{'NOT YET SPECIFIED'}</Typography.Text>
+                                }
+                            </div>
+                        </List.Item>
+                    )}
+                />
+            ),
+            centered: true
+        })
+    }
+
+    const isValidTimestamp = (timestamp) => isNumeric(new Date(timestamp).getTime());
+
+    const isNumeric = (n) => !isNaN(parseFloat(n)) && isFinite(n);
 
     const onDeleteArtMovement = async (artMovementToDelete) => {
         confirm({
@@ -261,6 +317,21 @@ export default function ArtMovementsManagement() {
         setFilteredArtMovementsInfo(filters);
     };
 
+    const onSelectedArtMovementsRowKeysChange = (newSelectedArtMovementsRowKeys) => {
+        console.log('selected row keys changed: ', newSelectedArtMovementsRowKeys);
+        setSelectedArtMovementsRowKeys(newSelectedArtMovementsRowKeys);
+    }
+
+    const artMovementsRowSelection = {
+        selectedArtMovementsRowKeys,
+        onChange: onSelectedArtMovementsRowKeysChange,
+        selections: [
+            Table.SELECTION_ALL,
+            Table.SELECTION_INVERT,
+            Table.SELECTION_NONE
+        ]
+    }
+
     const artMovementsManagementTableColumns = [
         {
             title: 'Name',
@@ -270,7 +341,8 @@ export default function ArtMovementsManagement() {
             ...getArtMovementsColumnSearchProps('name'),
             filteredValue: filteredArtMovementsInfo.name || null,
             sorter: (a, b) => a.name.localeCompare(b.name),
-            sortDirections: ['ascend', 'descend']
+            sortDirections: ['ascend', 'descend'],
+            defaultSortOrder: 'ascend'
         },
         {
             title: 'Period',
@@ -279,6 +351,7 @@ export default function ArtMovementsManagement() {
             width: '20%',
             filters: [...artMovementPeriods.map((amp) => ({ text: amp, value: amp }))],
             filteredValue: filteredArtMovementsInfo.period || null,
+            filterSearch: true,
             onFilter: (value, artMovement) => artMovement.period.includes(value),
             sorter: (a, b) => a.period.localeCompare(b.period),
             sortDirections: ['ascend', 'descend'],
@@ -335,8 +408,8 @@ export default function ArtMovementsManagement() {
             filteredValue: filteredArtMovementsInfo.endPeriodYear || null,
             sorter: (a, b) => a.endPeriodYear - b.endPeriodYear,
             sortDirections: ['ascend', 'descend'],
-            render: (_, { endPeriodYear }) => endPeriodYear 
-                ? (<Tag color='magenta'>{endPeriodYear}</Tag>) : (<Tag color='volcano'>NOT SPECIFIED</Tag>)
+            render: (_, { endPeriodYear }) => endPeriodYear
+                ? (<Tag color='magenta'>{endPeriodYear}</Tag>) : (<Tag color='volcano'>NOT YET SPECIFIED</Tag>)
         },
         {
             title: 'Actions',
@@ -344,7 +417,7 @@ export default function ArtMovementsManagement() {
             width: '30%',
             render: (_, artMovement) => (
                 <Space size="middle">
-                    <Button>Details</Button>
+                    <Button onClick={() => onOpenArtMovementDetailsModal(artMovement)}>Details</Button>
                     <Button type="primary" onClick={() => openAddOrEditArtMovementModal(artMovement)} ghost>Edit</Button>
                     <Button type="primary" danger onClick={() => onDeleteArtMovement(artMovement)}>Delete</Button>
                 </Space>
@@ -472,6 +545,7 @@ export default function ArtMovementsManagement() {
                     </Form>
                 </Modal>
                 <Table
+                    rowKey={(record) => record.id}
                     columns={artMovementsManagementTableColumns}
                     dataSource={artMovementsToManage}
                     loading={isArtMovementsDataLoading}
@@ -480,6 +554,19 @@ export default function ArtMovementsManagement() {
                         showSizeChanger: true,
                         pageSizeOptions: ['10', '20', '30']
                     }}
+                    expandable={{
+                        expandedRowRender: (artMovement) => (
+                            <p
+                                style={{
+                                    margin: 0,
+                                    textAlign: 'justify'
+                                }}
+                            >
+                                <Typography.Text mark>DESCRIPTION:</Typography.Text> {artMovement.description}
+                            </p>
+                        ),
+                    }}
+                    rowSelection={artMovementsRowSelection}
                     onChange={handleFilteredArtMovementsInfoChange}
                 />
             </div>

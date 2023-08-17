@@ -204,7 +204,8 @@ export default function GenresManagement() {
             width: '50%',
             ...getGenresColumnSearchProps('name'),
             sorter: (a, b) => a.name.localeCompare(b.name),
-            sortDirections: ['ascend', 'descend']
+            sortDirections: ['ascend', 'descend'],
+            defaultSortOrder: 'ascend'
         },
         {
             title: 'Actions',

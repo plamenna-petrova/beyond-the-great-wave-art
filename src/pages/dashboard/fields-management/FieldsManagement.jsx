@@ -205,7 +205,8 @@ export default function FieldsManagement() {
             width: '50%',
             ...getFieldsColumnSearchProps('name'),
             sorter: (a, b) => a.name.localeCompare(b.name),
-            sortDirections: ['ascend', 'descend']
+            sortDirections: ['ascend', 'descend'],
+            defaultSortOrder: 'ascend'
         },
         {
             title: 'Actions',

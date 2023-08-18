@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Button, Form, Modal, Input, Space, Table, Row, Col, notification } from "antd";
+import { Button, Form, Modal, Input, Space, Table, Row, Col, notification, Typography, Popconfirm } from "antd";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { createFieldAsync, deleteFieldAsync, fieldExistsAsync, getAllFieldsAsync, updateFieldAsync } from "../../../services/fields-service";
 import { useRef } from "react";
@@ -8,34 +8,72 @@ import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
 import { maxLengthFieldErrorMessage, minLengthFieldErrorMessage, requiredFieldErrorMessage } from "../../../helpers/global-constants";
 
+import './FieldsManagement.css';
+
+const EditableFieldCell = ({
+    editing,
+    dataIndex,
+    title,
+    inputType,
+    record,
+    index,
+    children,
+    ...restProps
+}) => {
+    return (
+        <td {...restProps}>
+            {editing ? (
+                <Form.Item
+                    name={['field', dataIndex]}
+                    style={{
+                        margin: 0
+                    }}
+                    rules={[
+                        {
+                            required: true,
+                            message: requiredFieldErrorMessage('field', 'name')
+                        },
+                        {
+                            min: 6,
+                            message: minLengthFieldErrorMessage('field', 'name', 6)
+                        },
+                        {
+                            max: 30,
+                            message: maxLengthFieldErrorMessage('field', 'name', 30)
+                        }
+                    ]}
+                >
+                    <Input />
+                </Form.Item>
+            ) : (
+                children
+            )}
+        </td>
+    )
+}
+
 export default function FieldsManagement() {
     const [fieldsToManage, setFieldsToManage] = useState([]);
     const [isFieldsDataLoading, setIsFieldsDataLoading] = useState(false);
     const [isAddOrEditFieldModalOpened, setIsAddOrEditFieldModalOpened] = useState(false);
-    const [fieldToEditId, setFieldToEditId] = useState(null);
-    const [addOrEditFieldForm] = Form.useForm();
+    const [addFieldForm] = Form.useForm();
+    const [editFieldForm] = Form.useForm();
     const [api, notificationContextHolder] = notification.useNotification();
     const [fieldSearchText, setFieldSearchText] = useState('');
     const [fieldSearchedColumn, setFieldSearchedColumn] = useState('');
     const fieldSearchInput = useRef(null);
     const { confirm } = Modal;
+    const [fieldEditingKey, setFieldEditingKey] = useState('');
+    const editFieldFormValues = Form.useWatch([], editFieldForm);
+    const [isEditFieldFormSubmittable, setIsEditFieldFormSubmittable] = useState(true);
 
-    const openAddOrEditFieldModal = (currentField) => {
-        if (currentField) {
-            addOrEditFieldForm.setFieldsValue({ field: currentField });
-            setFieldToEditId(currentField.id);
-        }
-
+    const openAddOrEditFieldModal = () => {
         setIsAddOrEditFieldModalOpened(true);
     }
 
     const handleCancelAddOrEditFieldModal = () => {
-        addOrEditFieldForm.resetFields();
+        addFieldForm.resetFields();
         setIsAddOrEditFieldModalOpened(false);
-
-        if (fieldToEditId) {
-            setFieldToEditId(null);
-        }
     }
 
     const addOrEditFieldModalFormLayout = {
@@ -47,27 +85,21 @@ export default function FieldsManagement() {
         }
     }
 
-    const onAddOrEditFieldFormFinish = async (addOrEditFieldFormValues) => {
-        const { field } = addOrEditFieldFormValues;
+    const onaddFieldFormFinish = async (addFieldFormValues) => {
+        const { field } = addFieldFormValues;
 
-        if (!fieldToEditId) {
-            if (await fieldExistsAsync(field.name)) {
-                openFieldsManagementNotificationWithIcon('warning', 'Oops', 'Such field already exists!');
-                return;
-            }
-
-            await createFieldAsync(field);
-        } else {
-            await updateFieldAsync(fieldToEditId, field);
-            setFieldToEditId(null);
+        if (await fieldExistsAsync(field.name)) {
+            openFieldsManagementNotificationWithIcon('warning', 'Oops', 'Such field already exists!');
+            return;
         }
 
+        await createFieldAsync(field);
         setIsAddOrEditFieldModalOpened(false);
-        addOrEditFieldForm.resetFields();
+        addFieldForm.resetFields();
         loadFieldsData();
     }
 
-    const onAddOrEditFieldFormFinishFailed = (error) => {
+    const onaddFieldFormFinishFailed = (error) => {
         console.log('error', error);
     }
 
@@ -197,6 +229,43 @@ export default function FieldsManagement() {
         setFieldSearchText('');
     }
 
+    const isFieldEdited = (field) => field.id === fieldEditingKey;
+
+    const editField = (field) => {
+        editFieldForm.setFieldsValue({
+            field: {
+                name: field.name
+            }
+        });
+
+        setFieldEditingKey(field.id);
+    }
+
+    const onCancelFieldEdit = () => {
+        setFieldEditingKey('');
+    }
+
+    const onConfirmFieldEdit = async (confirmFieldEditId) => {
+        try {
+            const { field } = editFieldFormValues;
+            const editableFields = [...fieldsToManage];
+            const index = editableFields.findIndex((field) => field.id === confirmFieldEditId);
+
+            if (index > -1) {
+                const fieldToEdit = editableFields[index];
+                await updateFieldAsync(fieldToEdit.id, { ...fieldToEdit, ...field });
+                loadFieldsData();
+                setFieldEditingKey('');
+            } else {
+                editableFields.push(editFieldFormValues);
+                setFieldsToManage(editableFields);
+                setFieldEditingKey('');
+            }
+        } catch (errorInfo) {
+            console.log('Validation Failed:', errorInfo);
+        }
+    }
+
     const fieldsManagementTableColumns = [
         {
             title: 'Name',
@@ -206,20 +275,58 @@ export default function FieldsManagement() {
             ...getFieldsColumnSearchProps('name'),
             sorter: (a, b) => a.name.localeCompare(b.name),
             sortDirections: ['ascend', 'descend'],
-            defaultSortOrder: 'ascend'
+            defaultSortOrder: 'ascend',
+            editable: true
         },
         {
             title: 'Actions',
             key: 'actions',
             width: '50%',
-            render: (_, field) => (
-                <Space size="middle">
-                    <Button onClick={() => openAddOrEditFieldModal(field)}>Edit</Button>
-                    <Button type="primary" danger onClick={() => onDeleteField(field)}>Delete</Button>
-                </Space>
-            )
+            render: (_, field) => isFieldEdited(field)
+                ? (
+                    <span>
+                        <Popconfirm
+                            title="Save edit of current field?"
+                            onConfirm={() => onConfirmFieldEdit(field.id)}
+                        >
+                            <Typography.Link
+                                style={{
+                                    marginRight: 8
+                                }}
+                                disabled={!isEditFieldFormSubmittable}
+                            >
+                                Save
+                            </Typography.Link>
+                        </Popconfirm>
+                        <Popconfirm title="Cancel edit?" onConfirm={onCancelFieldEdit}>
+                            <a>Cancel</a>
+                        </Popconfirm>
+                    </span>
+                ) : (
+                    <Space size="middle">
+                        <Button disabled={fieldEditingKey !== ''} onClick={() => editField(field)}>Edit</Button>
+                        <Button type="primary" danger onClick={() => onDeleteField(field)}>Delete</Button>
+                    </Space>
+                )
         }
     ];
+
+    const mergedFieldsManagementTableColumns = fieldsManagementTableColumns.map((fieldsManagementTableCol) => {
+        if (!fieldsManagementTableCol.editable) {
+            return fieldsManagementTableCol;
+        }
+
+        return {
+            ...fieldsManagementTableCol,
+            onCell: (field) => ({
+                field,
+                dataIndex: fieldsManagementTableCol.dataIndex,
+                inputType: 'text',
+                title: fieldsManagementTableCol.title,
+                editing: isFieldEdited(field)
+            })
+        }
+    });
 
     const loadFieldsData = async () => {
         setIsFieldsDataLoading(true);
@@ -234,6 +341,18 @@ export default function FieldsManagement() {
         loadFieldsData();
     }, []);
 
+    useEffect(() => {
+        editFieldForm.validateFields()
+            .then(
+                () => {
+                    setIsEditFieldFormSubmittable(true);
+                },
+                () => {
+                    setIsEditFieldFormSubmittable(false);
+                }
+            );
+    }, [editFieldFormValues]);
+
     return (
         <div className="fields-management-wrapper">
             {notificationContextHolder}
@@ -246,21 +365,21 @@ export default function FieldsManagement() {
                 <Col span={12} style={{ textAlign: 'left' }}>
                     <Button type="dashed" style={{ marginRight: 20 }}>Export Fields</Button>
                     <Button type="dashed">Import Fields</Button>
-                </Col> 
+                </Col>
             </Row>
             <Modal
-                title={!fieldToEditId ? 'Add Field' : 'Edit Field'}
+                title={'Add Field'}
                 centered
                 open={isAddOrEditFieldModalOpened}
-                onOk={addOrEditFieldForm.submit}
+                onOk={addFieldForm.submit}
                 onCancel={handleCancelAddOrEditFieldModal}
             >
                 <Form
                     {...addOrEditFieldModalFormLayout}
-                    form={addOrEditFieldForm}
+                    form={addFieldForm}
                     name="add-or-edit-field-form"
-                    onFinish={onAddOrEditFieldFormFinish}
-                    onFinishFailed={onAddOrEditFieldFormFinishFailed}
+                    onFinish={onaddFieldFormFinish}
+                    onFinishFailed={onaddFieldFormFinishFailed}
                     style={{ maxWidth: 600 }}
                 >
                     <Form.Item
@@ -285,16 +404,26 @@ export default function FieldsManagement() {
                     </Form.Item>
                 </Form>
             </Modal>
-            <Table
-                columns={fieldsManagementTableColumns}
-                dataSource={fieldsToManage}
-                loading={isFieldsDataLoading}
-                pagination={{ 
-                    defaultPageSize: 10, 
-                    showSizeChanger: true, 
-                    pageSizeOptions: ['10', '20', '30'] 
-                }}
-            />
+            <Form form={editFieldForm} component={false} autoComplete="off">
+                <Table
+                    components={{
+                        body: {
+                            cell: EditableFieldCell
+                        }
+                    }}
+                    rowKey={(field) => field.id}
+                    columns={mergedFieldsManagementTableColumns}
+                    dataSource={fieldsToManage}
+                    loading={isFieldsDataLoading}
+                    rowClassName="field-editable-row"
+                    pagination={{
+                        defaultPageSize: 10,
+                        showSizeChanger: true,
+                        pageSizeOptions: ['10', '20', '30'],
+                        onChange: onCancelFieldEdit
+                    }}
+                />
+            </Form>
         </div>
     )
 }

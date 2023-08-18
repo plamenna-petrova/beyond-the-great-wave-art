@@ -545,7 +545,7 @@ export default function ArtMovementsManagement() {
                     </Form>
                 </Modal>
                 <Table
-                    rowKey={(record) => record.id}
+                    rowKey={(artMovement) => artMovement.id}
                     columns={artMovementsManagementTableColumns}
                     dataSource={artMovementsToManage}
                     loading={isArtMovementsDataLoading}

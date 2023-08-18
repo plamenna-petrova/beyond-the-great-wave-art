@@ -285,6 +285,7 @@ export default function GenresManagement() {
                 </Form>
             </Modal>
             <Table
+                rowKey={(genre) => genre.id}
                 columns={genresManagementTableColumns}
                 dataSource={genresToManage}
                 loading={isGenresDataLoading}

@@ -1,12 +1,40 @@
-import { Button, Col, DatePicker, Form, Input, List, Modal, notification, Row, Select, Space, Table, Tag, Typography } from "antd";
+import {
+    Button,
+    Col,
+    DatePicker,
+    Form,
+    Input,
+    List,
+    Modal,
+    notification,
+    Row,
+    Select,
+    Space,
+    Table,
+    Tag,
+    Typography,
+    theme,
+    Steps,
+    message
+} from "antd";
 import { useState, useRef } from "react"
-import { artMovementExistsAsync, createArtMovementAsync, updateArtMovementAsync, getAllArtMovementsAsync, deleteArtMovementAsync } from "../../../services/art-movements-service";
+import {
+    artMovementExistsAsync,
+    createArtMovementAsync,
+    updateArtMovementAsync,
+    getAllArtMovementsAsync,
+    deleteArtMovementAsync
+} from "../../../services/art-movements-service";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { useEffect } from "react";
-import { maxLengthFieldErrorMessage, minLengthFieldErrorMessage, requiredFieldErrorMessage } from "../../../helpers/global-constants";
+import {
+    maxLengthFieldErrorMessage,
+    minLengthFieldErrorMessage,
+    requiredFieldErrorMessage
+} from "../../../helpers/global-constants";
 import { useSelector } from "react-redux/es/exports";
 import TextArea from "antd/es/input/TextArea";
-import { SearchOutlined } from "@ant-design/icons";
+import { SearchOutlined, LoginOutlined, ProfileOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
 import dayjs from "dayjs";
 
@@ -31,7 +59,8 @@ export default function ArtMovementsManagement() {
     const [isArtMovementsDataLoading, setIsArtMovementsDataLoading] = useState(false);
     const [isAddOrEditArtMovementModalOpened, setIsAddOrEditArtMovementModalOpened] = useState(false);
     const [artMovementToEditId, setArtMovementToEditId] = useState(null);
-    const [addOrEditArtMovementForm] = Form.useForm();
+    const [addOrEditArtMovementPrimaryInformationForm] = Form.useForm();
+    const [addOrEditArtMovementTertiaryInformationForm] = Form.useForm();
     const [api, notificationContextHolder] = notification.useNotification();
     const [artMovementSearchText, setArtMovementSearchText] = useState('');
     const [artMovementSearchedColumn, setArtMovementSearchedColumn] = useState('');
@@ -42,38 +71,57 @@ export default function ArtMovementsManagement() {
     const currentUser = useSelector((state) => state.auth.currentUser);
     const [filteredArtMovementsInfo, setFilteredArtMovementsInfo] = useState({});
     const [selectedArtMovementsRowKeys, setSelectedArtMovementsRowKeys] = useState([]);
+    const { token } = theme.useToken();
+    const [artMovementStepperCurrentStep, setArtMovementStepperCurrentStep] = useState(0);
+    const [addOrEditArtMovementPrimaryInformationFormValues, setAddOrEditArtMovementPrimaryInformationFormValues] = useState({
+        name: null,
+        period: artMovementPeriods[0],
+        periodRange: null
+    });
+    const [addOrEditArtMovementTertiaryInformationFormValues, setAddOrEditArtMovementTertiaryInformationFormValues] = useState({
+        description: null
+    });
 
     const openAddOrEditArtMovementModal = (currentArtMovement) => {
-        if (currentArtMovement) {
+        addOrEditArtMovementPrimaryInformationForm.resetFields();
+        addOrEditArtMovementTertiaryInformationForm.resetFields();
 
-            addOrEditArtMovementForm.setFieldsValue({
-                artMovement: {
-                    name: currentArtMovement.name,
-                    description: currentArtMovement.description,
-                    period: currentArtMovement.period,
-                    periodRange: [
-                        dayjs(new Date(currentArtMovement.startPeriodYear + 1, null, null, null, null, null)),
-                        currentArtMovement.endPeriodYear ?
-                            dayjs(new Date(currentArtMovement.endPeriodYear, null, null, null, null, null))
-                            : null
-                    ],
-                }
+        if (currentArtMovement) {
+            setAddOrEditArtMovementPrimaryInformationFormValues({
+                name: currentArtMovement.name,
+                period: currentArtMovement.period,
+                periodRange: [
+                    dayjs(new Date(currentArtMovement.startPeriodYear + 1, null, null, null, null, null)),
+                    currentArtMovement.endPeriodYear ?
+                        dayjs(new Date(currentArtMovement.endPeriodYear, null, null, null, null, null))
+                        : null
+                ]
             });
 
+            setAddOrEditArtMovementTertiaryInformationFormValues({
+                description: currentArtMovement.description
+            });
+
+            setArtMovementStepperCurrentStep(0);
             setArtMovementToEditId(currentArtMovement.id);
         } else {
-            addOrEditArtMovementForm.setFieldsValue({
-                artMovement: {
-                    period: artMovementPeriods[0]
-                }
+            setAddOrEditArtMovementPrimaryInformationFormValues({
+                name: null,
+                period: artMovementPeriods[0],
+                periodRange: null
             });
+
+            setAddOrEditArtMovementTertiaryInformationFormValues({
+                description: null
+            });
+
+            setArtMovementStepperCurrentStep(0);
         }
 
         setIsAddOrEditArtMovementModalOpened(true);
     }
 
     const handleCancelAddOrEditArtMovementModal = () => {
-        addOrEditArtMovementForm.resetFields();
         setIsAddOrEditArtMovementModalOpened(false);
 
         if (artMovementToEditId) {
@@ -81,7 +129,7 @@ export default function ArtMovementsManagement() {
         }
     }
 
-    const addOrEditArtMovementFormLayout = {
+    const artMovementFormLayout = {
         labelCol: {
             span: 6
         },
@@ -124,7 +172,6 @@ export default function ArtMovementsManagement() {
         }
 
         setIsAddOrEditArtMovementModalOpened(false);
-        addOrEditArtMovementForm.resetFields();
         loadArtMovementsData();
     }
 
@@ -162,7 +209,7 @@ export default function ArtMovementsManagement() {
                     bordered
                     style={{ marginTop: 10 }}
                     dataSource={artMovementDetails}
-                    renderItem={({title, value}) => (
+                    renderItem={({ title, value }) => (
                         <List.Item key={title}>
                             <List.Item.Meta
                                 title={<Typography.Text>{title}</Typography.Text>}
@@ -170,7 +217,9 @@ export default function ArtMovementsManagement() {
                             <div style={{ justifyContent: 'right' }}>
                                 {value
                                     ? isValidTimestamp(value) > 0
-                                        ? <Typography.Text>{dayjs(new Date(value)).format('MMM D, YYYY h:mm A')}</Typography.Text>
+                                        ? <Typography.Text>
+                                            {dayjs(new Date(value)).format('MMM D, YYYY h:mm A')}
+                                        </Typography.Text>
                                         : <Typography.Text>{value}</Typography.Text>
                                     : <Typography.Text mark>{'NOT YET SPECIFIED'}</Typography.Text>
                                 }
@@ -322,6 +371,152 @@ export default function ArtMovementsManagement() {
         setSelectedArtMovementsRowKeys(newSelectedArtMovementsRowKeys);
     }
 
+    const switchToNextStep = () => {
+        switch (artMovementStepperCurrentStep) {
+            case 0:
+                addOrEditArtMovementPrimaryInformationForm.submit();
+                break;
+            case 1:
+                setArtMovementStepperCurrentStep(artMovementStepperCurrentStep + 1);
+                break;
+        }
+    }
+
+    const switchToPreviousStep = () => {
+        switch (artMovementStepperCurrentStep) {
+            case addOrEditArtMovementSteps.length - 1:
+                addOrEditArtMovementTertiaryInformationForm.submit();
+                break;
+            case addOrEditArtMovementSteps.length - 2:
+                setArtMovementStepperCurrentStep(artMovementStepperCurrentStep - 1);
+                break;
+        }
+    }
+
+    const addOrEditArtMovementSteps = [
+        {
+            title: 'General',
+            content: (
+                <Form
+                    {...artMovementFormLayout}
+                    form={addOrEditArtMovementPrimaryInformationForm}
+                    initialValues={addOrEditArtMovementPrimaryInformationFormValues}
+                    name="add-or-edit-art-movement-primary-information-form"
+                    onFinish={() => { setArtMovementStepperCurrentStep(artMovementStepperCurrentStep + 1) }}
+                    style={{ maxWidth: 600, padding: 10 }}
+                >
+                    <Form.Item
+                        name="name"
+                        label="Name"
+                        rules={[
+                            {
+                                required: true,
+                                message: requiredFieldErrorMessage('art movement', 'name')
+                            },
+                            {
+                                min: 6,
+                                message: minLengthFieldErrorMessage('art movement', 'name', 6)
+                            },
+                            {
+                                max: 45,
+                                message: maxLengthFieldErrorMessage('art movement', 'name', 45)
+                            }
+                        ]}
+                    >
+                        <Input />
+                    </Form.Item>
+                    <Form.Item
+                        name="period"
+                        label="Period"
+                    >
+                        <Select>
+                            {artMovementPeriods.map((artMovementPeriod, index) => (
+                                <Option
+                                    key={`ArtMovementPeriod#${index + 1}`}
+                                    value={artMovementPeriod}
+                                >
+                                    {`${artMovementPeriod}`}
+                                </Option>
+                            ))}
+                        </Select>
+                    </Form.Item>
+                    <Form.Item
+                        name="periodRange"
+                        label="Period Span"
+                        rules={[
+                            {
+                                required: true,
+                                message: 'Please enter the span of art movement period'
+                            }
+                        ]}
+                    >
+                        <RangePicker picker="year" allowEmpty={[false, true]} style={{ width: 100 + '%' }} />
+                    </Form.Item>
+                </Form>
+            )
+        },
+        {
+            title: 'Image',
+            content: 'Second content'
+        },
+        {
+            title: 'Description',
+            content: (
+                <Form
+                    {...artMovementFormLayout}
+                    form={addOrEditArtMovementTertiaryInformationForm}
+                    initialValues={addOrEditArtMovementTertiaryInformationFormValues}
+                    name="add-or-edit-art-movement-tertiary-information-form"
+                    onFinish={() => {
+                        setArtMovementStepperCurrentStep(artMovementStepperCurrentStep - 1)
+                    }}
+                    style={{ maxWidth: 600, padding: 10 }}
+                >
+                    <Form.Item
+                        name="description"
+                        label="Description"
+                        rules={[
+                            {
+                                required: true,
+                                message: requiredFieldErrorMessage('art movement', 'description')
+                            },
+                            {
+                                min: 10,
+                                message: minLengthFieldErrorMessage('art movement', 'description', 10)
+                            },
+                            {
+                                max: 1500,
+                                message: maxLengthFieldErrorMessage('art movement', 'description', 1500)
+                            }
+                        ]}
+                    >
+                        <TextArea
+                            placeholder="Enter art movement description"
+                            rows={12}
+                            showCount
+                            style={{ resize: 'none' }}
+                        />
+                    </Form.Item>
+                </Form>
+            )
+        }
+    ]
+
+    const artMovementStepperItems = addOrEditArtMovementSteps.map((step) => ({
+        key: step.title,
+        title: step.title
+    }));
+
+    const artMovementStepperContentStyle = {
+        lineHeight: '320px',
+        padding: 15,
+        color: token.colorTextTertiary,
+        backgroundColor: token.colorFillAlter,
+        borderRadius: token.borderRadiusLG,
+        border: `1px dashed ${token.colorBorder}`,
+        marginTop: 16
+    }
+
     const artMovementsRowSelection = {
         selectedArtMovementsRowKeys,
         onChange: onSelectedArtMovementsRowKeysChange,
@@ -364,7 +559,7 @@ export default function ArtMovementsManagement() {
                     case artMovementPeriods[2]:
                         return (<Tag color='blue'>{period.toUpperCase()}</Tag>)
                     case artMovementPeriods[3]:
-                        return (<Tag color='red'>{period.toUppercase()}</Tag>)
+                        return (<Tag color='red'>{period.toUpperCase()}</Tag>)
                     case artMovementPeriods[4]:
                         return (<Tag color='orange'>{period.toUpperCase()}</Tag>)
                     case artMovementPeriods[5]:
@@ -438,6 +633,24 @@ export default function ArtMovementsManagement() {
         loadArtMovementsData();
     }, []);
 
+    useEffect(() => {
+        console.log('setting values');
+        console.log(addOrEditArtMovementPrimaryInformationFormValues);
+        
+        addOrEditArtMovementPrimaryInformationForm.setFieldsValue({
+            name: addOrEditArtMovementPrimaryInformationFormValues.name,
+            period: addOrEditArtMovementPrimaryInformationFormValues.period,
+            periodRange: addOrEditArtMovementPrimaryInformationFormValues.periodRange
+        })
+
+    }, [addOrEditArtMovementPrimaryInformationForm, addOrEditArtMovementPrimaryInformationFormValues]);
+
+    useEffect(() => {
+        addOrEditArtMovementTertiaryInformationForm.setFieldsValue({
+            description: addOrEditArtMovementTertiaryInformationFormValues.description
+        })
+    }, [addOrEditArtMovementTertiaryInformationForm, addOrEditArtMovementTertiaryInformationFormValues]);
+
     return (
         <>
             <div className="art-movements-management-wrapper">
@@ -448,7 +661,7 @@ export default function ArtMovementsManagement() {
                             Add New Art Movement
                         </Button>
                     </Col>
-                    <Col span={12} style={{ textAlign: 'left' }}>
+                    <Col span={12} style={{ textAlign: 'right' }}>
                         <Button type="dashed" style={{ marginRight: 20 }}>Export Art Movements</Button>
                         <Button type="dashed">Import Art Movements</Button>
                     </Col>
@@ -457,92 +670,54 @@ export default function ArtMovementsManagement() {
                     title={!artMovementToEditId ? 'Add Art Movement' : 'Edit Art Movement'}
                     centered
                     open={isAddOrEditArtMovementModalOpened}
-                    onOk={addOrEditArtMovementForm.submit}
                     onCancel={handleCancelAddOrEditArtMovementModal}
                     style={{ marginTop: 100 }}
                     bodyStyle={{ overflowY: 'auto', maxHeight: 'calc(100vh - 250px)' }}
+                    footer={null}
                 >
-                    <Form
-                        {...addOrEditArtMovementFormLayout}
-                        form={addOrEditArtMovementForm}
-                        name="add-or-edit-art-movement-form"
-                        onFinish={onAddOrEditArtMovementFormFinish}
-                        onFinishFailed={onAddOrEditArtMovementFormFinishFailed}
-                        style={{ maxWidth: 600 }}
+                    <Form.Provider
+                        onFormFinish={(name, { values, forms }) => {
+                            console.log('provider');
+                            console.log('name');
+                            console.log(name);
+                            console.log('values');
+                            console.log(values);
+                            console.log('forms');
+                            console.log(forms);
+                        }}
                     >
-                        <Form.Item
-                            name={['artMovement', 'name']}
-                            label="Name"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: requiredFieldErrorMessage('art movement', 'name')
-                                },
-                                {
-                                    min: 6,
-                                    message: minLengthFieldErrorMessage('art movement', 'name', 6)
-                                },
-                                {
-                                    max: 45,
-                                    message: maxLengthFieldErrorMessage('art movement', 'name', 45)
-                                }
-                            ]}
+                        <Steps current={artMovementStepperCurrentStep} items={artMovementStepperItems} />
+                        <div style={artMovementStepperContentStyle}>
+                            {addOrEditArtMovementSteps[artMovementStepperCurrentStep].content}
+                        </div>
+                        <div
+                            style={{
+                                marginTop: 24
+                            }}
                         >
-                            <Input />
-                        </Form.Item>
-                        <Form.Item
-                            name={['artMovement', 'period']}
-                            label="Period"
-                        >
-                            <Select value={artMovementPeriods[0]}>
-                                {artMovementPeriods.map((artMovementPeriod, index) => (
-                                    <Option
-                                        key={`ArtMovementPeriod#${index + 1}`}
-                                        value={artMovementPeriod}
-                                    >
-                                        {`${artMovementPeriod}`}
-                                    </Option>
-                                ))}
-                            </Select>
-                        </Form.Item>
-                        <Form.Item
-                            name={['artMovement', 'periodRange']}
-                            label="Period Span"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: 'Please enter the span of art movement period'
-                                }
-                            ]}
-                        >
-                            <RangePicker picker="year" allowEmpty={[false, true]} />
-                        </Form.Item>
-                        <Form.Item
-                            name={['artMovement', 'description']}
-                            label="Description"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: requiredFieldErrorMessage('art movement', 'description')
-                                },
-                                {
-                                    min: 10,
-                                    message: minLengthFieldErrorMessage('art movement', 'description', 10)
-                                },
-                                {
-                                    max: 1500,
-                                    message: maxLengthFieldErrorMessage('art movement', 'description', 1500)
-                                }
-                            ]}
-                        >
-                            <TextArea
-                                placeholder="Enter art movement description"
-                                rows={10}
-                                showCount
-                                style={{ resize: 'none' }}
-                            />
-                        </Form.Item>
-                    </Form>
+                            {artMovementStepperCurrentStep < addOrEditArtMovementSteps.length - 1 && (
+                                <Button htmlType="submit" type="primary" onClick={() => switchToNextStep()}>
+                                    Next
+                                </Button>
+                            )}
+                            {artMovementStepperCurrentStep === addOrEditArtMovementSteps.length - 1 && (
+                                <Button type="primary" onClick={() => message('Processing...')}>
+                                    Done
+                                </Button>
+                            )}
+                            {artMovementStepperCurrentStep > 0 && (
+                                <Button
+                                    htmlType="submit"
+                                    style={{
+                                        margin: '0 8px'
+                                    }}
+                                    onClick={() => switchToPreviousStep()}
+                                >
+                                    Back
+                                </Button>
+                            )}
+                        </div>
+                    </Form.Provider>
                 </Modal>
                 <Table
                     rowKey={(artMovement) => artMovement.id}

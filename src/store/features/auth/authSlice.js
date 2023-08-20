@@ -11,6 +11,7 @@ export const authSlice = createSlice({
     reducers: {
         authenticateUser: (state, action) => {
             const { currentUser: userToSet } = action.payload;
+            
             if (userToSet) {
                 state.currentUser = userToSet;
                 const { accessToken, refreshToken } = userToSet;

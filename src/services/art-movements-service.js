@@ -1,4 +1,11 @@
-import { addNewRecordToFirestoreAsync, deleteFirestoreRecordAsync, firestoreRecordExistsAsync, getAllFirestoreRecordsAsync, getFirestoreRecordByIdAsync, updateFirestoreRecordAsync } from "./firebase-service";
+import { 
+    addNewRecordToFirestoreAsync, 
+    deleteFirestoreRecordAsync, 
+    firestoreRecordExistsAsync, 
+    getAllFirestoreRecordsAsync, 
+    getFirestoreRecordByIdAsync, 
+    updateFirestoreRecordAsync 
+} from "./firebase-service";
 
 const artMovementsCollectionName = "art-movements";
 

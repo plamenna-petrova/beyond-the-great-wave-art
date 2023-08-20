@@ -6,7 +6,11 @@ import { useRef } from "react";
 import { useEffect } from "react";
 import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
-import { maxLengthFieldErrorMessage, minLengthFieldErrorMessage, requiredFieldErrorMessage } from "../../../helpers/global-constants";
+import { 
+    maxLengthFieldErrorMessage, 
+    minLengthFieldErrorMessage, 
+    requiredFieldErrorMessage 
+} from "../../../helpers/global-constants";
 
 import './FieldsManagement.css';
 
@@ -15,7 +19,7 @@ const EditableFieldCell = ({
     dataIndex,
     title,
     inputType,
-    record,
+    field,
     index,
     children,
     ...restProps
@@ -85,7 +89,7 @@ export default function FieldsManagement() {
         }
     }
 
-    const onaddFieldFormFinish = async (addFieldFormValues) => {
+    const onAddFieldFormFinish = async (addFieldFormValues) => {
         const { field } = addFieldFormValues;
 
         if (await fieldExistsAsync(field.name)) {
@@ -99,7 +103,7 @@ export default function FieldsManagement() {
         loadFieldsData();
     }
 
-    const onaddFieldFormFinishFailed = (error) => {
+    const onAddFieldFormFinishFailed = (error) => {
         console.log('error', error);
     }
 
@@ -249,11 +253,13 @@ export default function FieldsManagement() {
         try {
             const { field } = editFieldFormValues;
             const editableFields = [...fieldsToManage];
-            const index = editableFields.findIndex((field) => field.id === confirmFieldEditId);
+            const editedFieldIndex = editableFields.findIndex((field) => field.id === confirmFieldEditId);
 
-            if (index > -1) {
-                const fieldToEdit = editableFields[index];
+            if (editedFieldIndex > -1) {
+                const fieldToEdit = editableFields[editedFieldIndex];
                 await updateFieldAsync(fieldToEdit.id, { ...fieldToEdit, ...field });
+                editableFields.splice(editedFieldIndex, 1, { ... fieldToEdit, ...field });
+                setFieldsToManage(editableFields);
                 loadFieldsData();
                 setFieldEditingKey('');
             } else {
@@ -262,7 +268,7 @@ export default function FieldsManagement() {
                 setFieldEditingKey('');
             }
         } catch (errorInfo) {
-            console.log('Validation Failed:', errorInfo);
+            console.log('Update Failed:', errorInfo);
         }
     }
 
@@ -309,7 +315,7 @@ export default function FieldsManagement() {
                     </Space>
                 )
         }
-    ];
+    ]
 
     const mergedFieldsManagementTableColumns = fieldsManagementTableColumns.map((fieldsManagementTableCol) => {
         if (!fieldsManagementTableCol.editable) {
@@ -362,7 +368,7 @@ export default function FieldsManagement() {
                         Add New Field
                     </Button>
                 </Col>
-                <Col span={12} style={{ textAlign: 'left' }}>
+                <Col span={12} style={{ textAlign: 'right' }}>
                     <Button type="dashed" style={{ marginRight: 20 }}>Export Fields</Button>
                     <Button type="dashed">Import Fields</Button>
                 </Col>
@@ -377,9 +383,9 @@ export default function FieldsManagement() {
                 <Form
                     {...addOrEditFieldModalFormLayout}
                     form={addFieldForm}
-                    name="add-or-edit-field-form"
-                    onFinish={onaddFieldFormFinish}
-                    onFinishFailed={onaddFieldFormFinishFailed}
+                    name="add-field-form"
+                    onFinish={onAddFieldFormFinish}
+                    onFinishFailed={onAddFieldFormFinishFailed}
                     style={{ maxWidth: 600 }}
                 >
                     <Form.Item
@@ -406,12 +412,12 @@ export default function FieldsManagement() {
             </Modal>
             <Form form={editFieldForm} component={false} autoComplete="off">
                 <Table
+                    rowKey={(field) => field.id}
                     components={{
                         body: {
                             cell: EditableFieldCell
                         }
                     }}
-                    rowKey={(field) => field.id}
                     columns={mergedFieldsManagementTableColumns}
                     dataSource={fieldsToManage}
                     loading={isFieldsDataLoading}

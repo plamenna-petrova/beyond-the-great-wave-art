@@ -1,39 +1,79 @@
-import { Form, Modal, notification, Input, Button, Space, Table, Row, Col } from "antd";
+import { Form, Modal, notification, Input, Button, Space, Table, Row, Col, Popconfirm, Typography } from "antd";
 import { useEffect, useRef, useState } from "react";
 import { createGenreAsync, deleteGenreAsync, genreExistsAsync, getAllGenresAsync, updateGenreAsync } from "../../../services/genres-service";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
-import { maxLengthFieldErrorMessage, minLengthFieldErrorMessage, requiredFieldErrorMessage } from "../../../helpers/global-constants";
+import { 
+    maxLengthFieldErrorMessage,
+    minLengthFieldErrorMessage, 
+    requiredFieldErrorMessage 
+} from "../../../helpers/global-constants";
+
+const EditableGenreCell = ({
+    editing,
+    dataIndex,
+    title,
+    inputType,
+    genre,
+    index,
+    children,
+    ...restProps
+}) => {
+    return (
+        <td {...restProps}>
+            {editing ? (
+                <Form.Item
+                    name={['genre', dataIndex]}
+                    style={{
+                        margin: 0
+                    }}
+                    rules={[
+                        {
+                            required: true,
+                            message: requiredFieldErrorMessage('genre', 'name')
+                        },
+                        {
+                            min: 4,
+                            message: minLengthFieldErrorMessage('genre', 'name', 4)
+                        },
+                        {
+                            max: 35,
+                            message: maxLengthFieldErrorMessage('genre', 'name', 35)
+                        }
+                    ]}
+                >
+                    <Input />
+                </Form.Item>
+            ) : (
+                children
+            )}
+        </td>
+    )
+}
 
 export default function GenresManagement() {
     const [genresToManage, setGenresToManage] = useState([]);
     const [isGenresDataLoading, setIsGenresDataLoading] = useState(false);
     const [isAddOrEditGenreModalOpened, setIsAddOrEditGenreModalOpened] = useState(false);
-    const [genreToEditId, setGenreToEditId] = useState(null);
-    const [addOrEditGenreForm] = Form.useForm();
+    const [addGenreForm] = Form.useForm();
+    const [editGenreForm] = Form.useForm();
     const [api, notificationContextHolder] = notification.useNotification();
     const [genreSearchText, setGenreSearchText] = useState('');
     const [genreSearchedColumn, setGenreSearchedColumn] = useState('');
     const genreSearchInput = useRef();
     const { confirm } = Modal;
+    const [genreEditingKey, setGenreEditingKey] = useState('');
+    const editGenreFormValues = Form.useWatch([], editGenreForm);
+    const [isEditGenreFormSubmittable, setIsEditGenreFormSubmittable] = useState(true);
 
-    const openAddOrEditGenreModal = (currentGenre) => {
-        if (currentGenre) {
-            addOrEditGenreForm.setFieldsValue({ genre: currentGenre });
-            setGenreToEditId(currentGenre.id);
-        }
-
+    const openAddOrEditGenreModal = () => {
         setIsAddOrEditGenreModalOpened(true);
     }
 
     const handleCancelAddOrEditGenreModal = () => {
-        addOrEditGenreForm.resetFields();
+        addGenreForm.resetFields();
         setIsAddOrEditGenreModalOpened(false);
-
-        if (genreToEditId) {
-            setGenreToEditId(null);
-        }
     }
 
     const addOrEditGenreModalFormLayout = {
@@ -45,27 +85,21 @@ export default function GenresManagement() {
         }
     }
 
-    const onAddOrEditGenreFormFinish = async (addOrEditGenreFormValues) => {
+    const onAddGenreFormFinish = async (addOrEditGenreFormValues) => {
         const { genre } = addOrEditGenreFormValues;
 
-        if (!genreToEditId) {
-            if (await genreExistsAsync(genre.name)) {
-                openGenresManagementNotificationWithIcon('warning', 'Oops', 'Such genre already exists!');
-                return;
-            }
-
-            await createGenreAsync(genre);
-        } else {
-            await updateGenreAsync(genreToEditId, genre);
-            setGenreToEditId(null);
+        if (await genreExistsAsync(genre.name)) {
+            openGenresManagementNotificationWithIcon('warning', 'Oops', 'Such genre already exists!');
+            return;
         }
 
+        await createGenreAsync(genre);
         setIsAddOrEditGenreModalOpened(false);
-        addOrEditGenreForm.resetFields();
+        addGenreForm.resetFields();
         loadGenresData();
     }
 
-    const onAddOrEditGenreFormFinishFailed = (error) => {
+    const onAddGenreFormFinishFailed = (error) => {
         console.log('error', error);
     }
 
@@ -102,7 +136,7 @@ export default function GenresManagement() {
                     ref={genreSearchInput}
                     placeholder={`Search by ${dataIndex}`}
                     value={selectedKeys[0]}
-                    onChange={(event) => setSelectedKeys(event.target.value ? [event.target.value]: [])}
+                    onChange={(event) => setSelectedKeys(event.target.value ? [event.target.value] : [])}
                     onPressEnter={() => handleGenreSearch(selectedKeys, confirm, dataIndex)}
                     style={{
                         marginBottom: 8,
@@ -159,10 +193,10 @@ export default function GenresManagement() {
             <SearchOutlined
                 style={{
                     color: filtered ? '#1677ff' : undefined
-                }} 
+                }}
             />
         ),
-        onFilter: (value, record) => 
+        onFilter: (value, record) =>
             record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
         onFilterDropdownOpenChange: (visible) => {
             if (visible) {
@@ -178,11 +212,11 @@ export default function GenresManagement() {
                     }}
                     searchWords={[genreSearchText]}
                     autoEscape
-                    textToHighlight={genreValue ? genreValue.toString() : ''} 
+                    textToHighlight={genreValue ? genreValue.toString() : ''}
                 />
             ) : (
-               genreValue
-            )    
+                genreValue
+            )
     })
 
     const handleGenreSearch = (selectedKeys, confirmSearch, dataIndex) => {
@@ -196,6 +230,45 @@ export default function GenresManagement() {
         setGenreSearchText('');
     }
 
+    const isGenreEdited = (genre) => genre.id === genreEditingKey;
+
+    const editGenre = (genre) => {
+        editGenreForm.setFieldsValue({
+            genre: {
+                name: genre.name
+            }
+        });
+
+        setGenreEditingKey(genre.id);
+    }
+
+    const onCancelGenreEdit = () => {
+        setGenreEditingKey('');
+    }
+
+    const onConfirmGenreEdit = async (confirmGenreEditId) => {
+        try {
+            const { genre } = editGenreFormValues;
+            const editableGenres = [...genresToManage];
+            const editedGenreIndex = editableGenres.findIndex((genre) => genre.id === confirmGenreEditId);
+
+            if (editedGenreIndex > - 1) {
+                const genreToEdit = editableGenres[editedGenreIndex];
+                await updateGenreAsync(genreToEdit.id, { ...genreToEdit, ...genre });
+                editableGenres.splice(editedGenreIndex, 1, { ...genreToEdit, ...genre });
+                setGenresToManage(editableGenres);
+                loadGenresData();
+                setGenreEditingKey('');
+            } else {
+                editableGenres.push(editGenreFormValues);
+                setGenresToManage(editableGenres);
+                setGenreEditingKey('');
+            }
+        } catch (errorInfo) {
+            console.log('Update Failed:', errorInfo);
+        }
+    }
+
     const genresManagementTableColumns = [
         {
             title: 'Name',
@@ -205,20 +278,58 @@ export default function GenresManagement() {
             ...getGenresColumnSearchProps('name'),
             sorter: (a, b) => a.name.localeCompare(b.name),
             sortDirections: ['ascend', 'descend'],
-            defaultSortOrder: 'ascend'
+            defaultSortOrder: 'ascend',
+            editable: true
         },
         {
             title: 'Actions',
             key: 'genre-actions',
             width: '50%',
-            render: (_, genre) => (
-                <Space size="middle">
-                    <Button onClick={() => openAddOrEditGenreModal(genre)}>Edit</Button>
-                    <Button type="primary" danger onClick={() => onDeleteGenre(genre)}>Delete</Button>
-                </Space>
-            )
+            render: (_, genre) => isGenreEdited(genre)
+                ? (
+                    <span>
+                        <Popconfirm
+                            title="Save edit of current genre?"
+                            onConfirm={() => onConfirmGenreEdit(genre.id)}
+                        >
+                            <Typography.Link
+                                style={{
+                                    marginRight: 8
+                                }}
+                                disabled={!isEditGenreFormSubmittable}
+                            >
+                                Save
+                            </Typography.Link>
+                        </Popconfirm>
+                        <Popconfirm title="Cancel edit?" onConfirm={onCancelGenreEdit}>
+                            <a>Cancel</a>
+                        </Popconfirm>
+                    </span>
+                ) : (
+                    <Space size="middle">
+                        <Button disabled={genreEditingKey !== ''} onClick={() => editGenre(genre)}>Edit</Button>
+                        <Button type="primary" danger onClick={() => onDeleteGenre(genre)}>Delete</Button>
+                    </Space>
+                )
         }
     ]
+
+    const mergedGenresManagementTableColumns = genresManagementTableColumns.map((genresManagementTableCol) => {
+        if (!genresManagementTableCol.editable) {
+            return genresManagementTableCol;
+        }
+
+        return {
+            ...genresManagementTableCol,
+            onCell: (genre) => ({
+                genre,
+                dataIndex: genresManagementTableCol.dataIndex,
+                inputType: 'text',
+                title: genresManagementTableCol.title,
+                editing: isGenreEdited(genre)
+            })
+        }
+    });
 
     const loadGenresData = async () => {
         setIsGenresDataLoading(true);
@@ -233,6 +344,18 @@ export default function GenresManagement() {
         loadGenresData();
     }, []);
 
+    useEffect(() => {
+        editGenreForm.validateFields()
+            .then(
+                () => {
+                    setIsEditGenreFormSubmittable(true);
+                },
+                () => {
+                    setIsEditGenreFormSubmittable(false);
+                }
+            )
+    }, [editGenreFormValues]);
+
     return (
         <div className="genres-management-wrapper">
             {notificationContextHolder}
@@ -242,24 +365,24 @@ export default function GenresManagement() {
                         Add New Genre
                     </Button>
                 </Col>
-                <Col span={12} style={{ textAlign: 'left' }}>
+                <Col span={12} style={{ textAlign: 'right' }}>
                     <Button type="dashed" style={{ marginRight: 20 }}>Export Genres</Button>
                     <Button type="dashed">Import Genres</Button>
                 </Col>
             </Row>
             <Modal
-                title={!genreToEditId ? 'Add Genre' : 'Edit Genre'}
+                title={'Add Genre'}
                 centered
                 open={isAddOrEditGenreModalOpened}
-                onOk={addOrEditGenreForm.submit}
+                onOk={addGenreForm.submit}
                 onCancel={handleCancelAddOrEditGenreModal}
             >
                 <Form
                     {...addOrEditGenreModalFormLayout}
-                    form={addOrEditGenreForm}
-                    name="add-or-edit-genre-form"
-                    onFinish={onAddOrEditGenreFormFinish}
-                    onFinishFailed={onAddOrEditGenreFormFinishFailed}
+                    form={addGenreForm}
+                    name="add-genre-form"
+                    onFinish={onAddGenreFormFinish}
+                    onFinishFailed={onAddGenreFormFinishFailed}
                     style={{ maxWidth: 600 }}
                 >
                     <Form.Item
@@ -284,17 +407,26 @@ export default function GenresManagement() {
                     </Form.Item>
                 </Form>
             </Modal>
-            <Table
-                rowKey={(genre) => genre.id}
-                columns={genresManagementTableColumns}
-                dataSource={genresToManage}
-                loading={isGenresDataLoading}
-                pagination={{
-                    defaultPageSize: 10,
-                    showSizeChanger: true,
-                    pageSizeOptions: ['10', '20', '30']
-                }}
-            />
+            <Form form={editGenreForm} component={false} autoComplete="off">
+                <Table
+                    rowKey={(genre) => genre.id}
+                    components={{
+                        body: {
+                            cell: EditableGenreCell
+                        }
+                    }}
+                    columns={mergedGenresManagementTableColumns}
+                    dataSource={genresToManage}
+                    loading={isGenresDataLoading}
+                    rowClassName="genre-editable-row"
+                    pagination={{
+                        defaultPageSize: 10,
+                        showSizeChanger: true,
+                        pageSizeOptions: ['10', '20', '30'],
+                        onChange: onCancelGenreEdit
+                    }}
+                />
+            </Form>
         </div>
     )
 }

@@ -76,7 +76,6 @@ export default function Register() {
             };
 
             await addNewRecordToFirestoreAsync("users", userToSave).then(async () => {
-
                 const additionalUserInfo = getAdditionalUserInfo(createdUserWithEmailAndPasswordCredentials);
 
                 dispatch(authenticateUser({
@@ -119,6 +118,7 @@ export default function Register() {
                 dispatch(setLoadingSpinner(true));
                 await signOutAsync().then(() => {
                     dispatch(authenticateUser({ currentUser: null }));
+
                     setTimeout(() => {
                         dispatch(setLoadingSpinner(false));
                         openRegistrationNotificationWithIcon(
@@ -239,8 +239,8 @@ export default function Register() {
                             },
                             {
                                 pattern: new RegExp(/^(?=.*\d)(?=.*[!@#$%^&/\\[\];',<>{}"+=.*])(?=.*[a-z])(?=.*[A-Z]).{4,}$/),
-                                message: 'The password must include at least one number, one uppercase character ' +
-                                    'and one special character'
+                                message: 'The password must include at least one number, one lowercase character ' +
+                                'one uppercase character and one special character'
                             }
                         ]}
                     >
@@ -262,6 +262,7 @@ export default function Register() {
                                     if (!value || getFieldValue('password') === value) {
                                         return Promise.resolve();
                                     }
+                                    
                                     return Promise.reject(
                                         new Error('The password and the confirmation password do not match!')
                                     );

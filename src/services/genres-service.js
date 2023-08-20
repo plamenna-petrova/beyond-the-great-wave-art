@@ -1,4 +1,3 @@
-
 import { 
     addNewRecordToFirestoreAsync, 
     deleteFirestoreRecordAsync, 

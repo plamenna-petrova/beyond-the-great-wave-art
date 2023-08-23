@@ -18,7 +18,7 @@ const getGenreByIdAsync = async (id) => {
 }
 
 const createGenreAsync = async (genreToCreate) => {
-    await addNewRecordToFirestoreAsync(genresCollectionName, genreToCreate);
+    return await addNewRecordToFirestoreAsync(genresCollectionName, genreToCreate);
 }
 
 const updateGenreAsync = async (genreToUpdateId, updateGenreData) => {
@@ -33,7 +33,7 @@ const genreExistsAsync = async (genreNameToFind) => {
     return await firestoreRecordExistsAsync(genresCollectionName, "name", genreNameToFind);
 }
 
-export {
+const genresService = {
     getAllGenresAsync,
     getGenreByIdAsync,
     createGenreAsync,
@@ -41,3 +41,5 @@ export {
     deleteGenreAsync,
     genreExistsAsync
 }
+
+export default genresService;

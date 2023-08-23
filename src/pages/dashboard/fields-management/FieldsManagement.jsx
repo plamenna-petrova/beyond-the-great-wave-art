@@ -1,18 +1,83 @@
 import { useState } from "react"
 import { Button, Form, Modal, Input, Space, Table, Row, Col, notification, Typography, Popconfirm } from "antd";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
-import { createFieldAsync, deleteFieldAsync, fieldExistsAsync, getAllFieldsAsync, updateFieldAsync } from "../../../services/fields-service";
+import fieldsService from "../../../services/fields-service";
 import { useRef } from "react";
 import { useEffect } from "react";
 import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
-import { 
-    maxLengthFieldErrorMessage, 
-    minLengthFieldErrorMessage, 
-    requiredFieldErrorMessage 
+import {
+    maxLengthFieldErrorMessage,
+    minLengthFieldErrorMessage,
+    requiredFieldErrorMessage
 } from "../../../helpers/global-constants";
-
 import './FieldsManagement.css';
+import { useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux/es/exports";
+import { createFieldAsyncThunk, getAllFieldsAsyncThunk } from "../../../store/features/fields/fieldsSlice";
+
+const AddFieldModal = ({ open, onCancel, onFinish, onFinishFailed }) => {
+    const [addFieldForm] = Form.useForm();
+
+    const addFieldModalFormLayout = {
+        labelCol: {
+            span: 8
+        },
+        wrapperCol: {
+            span: 16
+        }
+    }
+
+    return (
+        <Modal
+            title={'Add Field'}
+            centered
+            open={open}
+            onOk={() => {
+                addFieldForm
+                    .validateFields()
+                    .then((values) => {
+                        onFinish(values);
+                        addFieldForm.resetFields();
+                    });
+            }}
+            onCancel={() => {
+                addFieldForm.resetFields();
+                onCancel();
+            }}
+        >
+            <Form
+                {...addFieldModalFormLayout}
+                form={addFieldForm}
+                name="add-field-form"
+                onFinish={onFinish}
+                onFinishFailed={onFinishFailed}
+                style={{ maxWidth: 600 }}
+            >
+                <Form.Item
+                    name={['field', 'name']}
+                    label="Name"
+                    rules={[
+                        {
+                            required: true,
+                            message: requiredFieldErrorMessage('field', 'name')
+                        },
+                        {
+                            min: 6,
+                            message: minLengthFieldErrorMessage('field', 'name', 6)
+                        },
+                        {
+                            max: 30,
+                            message: maxLengthFieldErrorMessage('field', 'name', 30)
+                        }
+                    ]}
+                >
+                    <Input />
+                </Form.Item>
+            </Form>
+        </Modal>
+    )
+}
 
 const EditableFieldCell = ({
     editing,
@@ -57,10 +122,8 @@ const EditableFieldCell = ({
 }
 
 export default function FieldsManagement() {
-    const [fieldsToManage, setFieldsToManage] = useState([]);
     const [isFieldsDataLoading, setIsFieldsDataLoading] = useState(false);
-    const [isAddOrEditFieldModalOpened, setIsAddOrEditFieldModalOpened] = useState(false);
-    const [addFieldForm] = Form.useForm();
+    const [isAddFieldModalOpened, setIsAddFieldModalOpened] = useState(false);
     const [editFieldForm] = Form.useForm();
     const [api, notificationContextHolder] = notification.useNotification();
     const [fieldSearchText, setFieldSearchText] = useState('');
@@ -71,36 +134,36 @@ export default function FieldsManagement() {
     const editFieldFormValues = Form.useWatch([], editFieldForm);
     const [isEditFieldFormSubmittable, setIsEditFieldFormSubmittable] = useState(true);
 
-    const openAddOrEditFieldModal = () => {
-        setIsAddOrEditFieldModalOpened(true);
+    const fieldsToManage = useSelector(state => state.fields);
+    const dispatch = useDispatch();
+
+    const openAddFieldModal = () => {
+        setIsAddFieldModalOpened(true);
     }
 
-    const handleCancelAddOrEditFieldModal = () => {
-        addFieldForm.resetFields();
-        setIsAddOrEditFieldModalOpened(false);
-    }
-
-    const addOrEditFieldModalFormLayout = {
-        labelCol: {
-            span: 8
-        },
-        wrapperCol: {
-            span: 16
-        }
+    const handleCancelAddFieldModal = () => {
+        setIsAddFieldModalOpened(false);
     }
 
     const onAddFieldFormFinish = async (addFieldFormValues) => {
         const { field } = addFieldFormValues;
 
-        if (await fieldExistsAsync(field.name)) {
+        if (await fieldsService.fieldExistsAsync(field.name)) {
             openFieldsManagementNotificationWithIcon('warning', 'Oops', 'Such field already exists!');
             return;
         }
 
-        await createFieldAsync(field);
-        setIsAddOrEditFieldModalOpened(false);
-        addFieldForm.resetFields();
-        loadFieldsData();
+        dispatch(createFieldAsyncThunk())
+            .unwrap()
+            .then(data => {
+                console.log('after creation of field');
+                console.log(data);
+            })
+            .catch((error) => {
+                console.log('something went wrong');
+                console.log(error);
+            });
+        setIsAddFieldModalOpened(false);
     }
 
     const onAddFieldFormFinishFailed = (error) => {
@@ -113,7 +176,7 @@ export default function FieldsManagement() {
             icon: <ExclamationCircleOutlined />,
             content: `Do you really wish to remove ${fieldToDelete.name}?`,
             async onOk() {
-                await deleteFieldAsync(fieldToDelete.id);
+                await fieldsService.deleteFieldAsync(fieldToDelete.id);
                 loadFieldsData();
             },
             centered: true
@@ -257,14 +320,12 @@ export default function FieldsManagement() {
 
             if (editedFieldIndex > -1) {
                 const fieldToEdit = editableFields[editedFieldIndex];
-                await updateFieldAsync(fieldToEdit.id, { ...fieldToEdit, ...field });
-                editableFields.splice(editedFieldIndex, 1, { ... fieldToEdit, ...field });
-                setFieldsToManage(editableFields);
+                await fieldsService.updateFieldAsync(fieldToEdit.id, { ...fieldToEdit, ...field });
+                editableFields.splice(editedFieldIndex, 1, { ...fieldToEdit, ...field });
                 loadFieldsData();
                 setFieldEditingKey('');
             } else {
                 editableFields.push(editFieldFormValues);
-                setFieldsToManage(editableFields);
                 setFieldEditingKey('');
             }
         } catch (errorInfo) {
@@ -305,7 +366,7 @@ export default function FieldsManagement() {
                             </Typography.Link>
                         </Popconfirm>
                         <Popconfirm title="Cancel edit?" onConfirm={onCancelFieldEdit}>
-                            <a>Cancel</a>
+                            <Typography.Link>Cancel</Typography.Link>
                         </Popconfirm>
                     </span>
                 ) : (
@@ -334,18 +395,17 @@ export default function FieldsManagement() {
         }
     });
 
-    const loadFieldsData = async () => {
+    const loadFieldsData = useCallback(() => {
         setIsFieldsDataLoading(true);
-        const allFieldsToLoad = await getAllFieldsAsync();
-        setFieldsToManage(allFieldsToLoad);
+        dispatch(getAllFieldsAsyncThunk());
         setTimeout(() => {
             setIsFieldsDataLoading(false);
         }, 400);
-    }
+    }, [dispatch]);
 
     useEffect(() => {
         loadFieldsData();
-    }, []);
+    }, [loadFieldsData]);
 
     useEffect(() => {
         editFieldForm.validateFields()
@@ -357,14 +417,14 @@ export default function FieldsManagement() {
                     setIsEditFieldFormSubmittable(false);
                 }
             );
-    }, [editFieldFormValues]);
+    }, [editFieldForm, editFieldFormValues]);
 
     return (
         <div className="fields-management-wrapper">
             {notificationContextHolder}
             <Row style={{ marginBottom: 20 }}>
                 <Col span={12} style={{ textAlign: 'left' }}>
-                    <Button type="primary" onClick={openAddOrEditFieldModal}>
+                    <Button type="primary" onClick={openAddFieldModal}>
                         Add New Field
                     </Button>
                 </Col>
@@ -373,43 +433,12 @@ export default function FieldsManagement() {
                     <Button type="dashed">Import Fields</Button>
                 </Col>
             </Row>
-            <Modal
-                title={'Add Field'}
-                centered
-                open={isAddOrEditFieldModalOpened}
-                onOk={addFieldForm.submit}
-                onCancel={handleCancelAddOrEditFieldModal}
-            >
-                <Form
-                    {...addOrEditFieldModalFormLayout}
-                    form={addFieldForm}
-                    name="add-field-form"
-                    onFinish={onAddFieldFormFinish}
-                    onFinishFailed={onAddFieldFormFinishFailed}
-                    style={{ maxWidth: 600 }}
-                >
-                    <Form.Item
-                        name={['field', 'name']}
-                        label="Name"
-                        rules={[
-                            {
-                                required: true,
-                                message: requiredFieldErrorMessage('field', 'name')
-                            },
-                            {
-                                min: 6,
-                                message: minLengthFieldErrorMessage('field', 'name', 6)
-                            },
-                            {
-                                max: 30,
-                                message: maxLengthFieldErrorMessage('field', 'name', 30)
-                            }
-                        ]}
-                    >
-                        <Input />
-                    </Form.Item>
-                </Form>
-            </Modal>
+            <AddFieldModal
+                open={isAddFieldModalOpened}
+                onCancel={handleCancelAddFieldModal}
+                onFinish={onAddFieldFormFinish}
+                onFinishFailed={onAddFieldFormFinishFailed}
+            />
             <Form form={editFieldForm} component={false} autoComplete="off">
                 <Table
                     rowKey={(field) => field.id}

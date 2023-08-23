@@ -1,6 +1,6 @@
 import { Form, Modal, notification, Input, Button, Space, Table, Row, Col, Popconfirm, Typography } from "antd";
 import { useEffect, useRef, useState } from "react";
-import { createGenreAsync, deleteGenreAsync, genreExistsAsync, getAllGenresAsync, updateGenreAsync } from "../../../services/genres-service";
+import genresService from "../../../services/genres-service";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
@@ -9,6 +9,9 @@ import {
     minLengthFieldErrorMessage, 
     requiredFieldErrorMessage 
 } from "../../../helpers/global-constants";
+import { useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux/es/exports";
+import { getAllGenresAsyncThunk } from "../../../store/features/genres/genresSlice";
 
 const EditableGenreCell = ({
     editing,
@@ -53,7 +56,6 @@ const EditableGenreCell = ({
 }
 
 export default function GenresManagement() {
-    const [genresToManage, setGenresToManage] = useState([]);
     const [isGenresDataLoading, setIsGenresDataLoading] = useState(false);
     const [isAddOrEditGenreModalOpened, setIsAddOrEditGenreModalOpened] = useState(false);
     const [addGenreForm] = Form.useForm();
@@ -66,6 +68,9 @@ export default function GenresManagement() {
     const [genreEditingKey, setGenreEditingKey] = useState('');
     const editGenreFormValues = Form.useWatch([], editGenreForm);
     const [isEditGenreFormSubmittable, setIsEditGenreFormSubmittable] = useState(true);
+
+    const genresToManage = useSelector(state => state.genres);
+    const dispatch = useDispatch();
 
     const openAddOrEditGenreModal = () => {
         setIsAddOrEditGenreModalOpened(true);
@@ -88,12 +93,12 @@ export default function GenresManagement() {
     const onAddGenreFormFinish = async (addOrEditGenreFormValues) => {
         const { genre } = addOrEditGenreFormValues;
 
-        if (await genreExistsAsync(genre.name)) {
+        if (await genresService.genreExistsAsync(genre.name)) {
             openGenresManagementNotificationWithIcon('warning', 'Oops', 'Such genre already exists!');
             return;
         }
 
-        await createGenreAsync(genre);
+        await genresService.createGenreAsync(genre);
         setIsAddOrEditGenreModalOpened(false);
         addGenreForm.resetFields();
         loadGenresData();
@@ -109,7 +114,7 @@ export default function GenresManagement() {
             icon: <ExclamationCircleOutlined />,
             content: `Do you really wish to remove ${genreToDelete.name}?`,
             async onOk() {
-                await deleteGenreAsync(genreToDelete.id);
+                await genresService.deleteGenreAsync(genreToDelete.id);
                 loadGenresData();
             },
             centered: true
@@ -254,14 +259,12 @@ export default function GenresManagement() {
 
             if (editedGenreIndex > - 1) {
                 const genreToEdit = editableGenres[editedGenreIndex];
-                await updateGenreAsync(genreToEdit.id, { ...genreToEdit, ...genre });
+                await genresService.updateGenreAsync(genreToEdit.id, { ...genreToEdit, ...genre });
                 editableGenres.splice(editedGenreIndex, 1, { ...genreToEdit, ...genre });
-                setGenresToManage(editableGenres);
                 loadGenresData();
                 setGenreEditingKey('');
             } else {
                 editableGenres.push(editGenreFormValues);
-                setGenresToManage(editableGenres);
                 setGenreEditingKey('');
             }
         } catch (errorInfo) {
@@ -302,7 +305,7 @@ export default function GenresManagement() {
                             </Typography.Link>
                         </Popconfirm>
                         <Popconfirm title="Cancel edit?" onConfirm={onCancelGenreEdit}>
-                            <a>Cancel</a>
+                            <Typography.Link>Cancel</Typography.Link>
                         </Popconfirm>
                     </span>
                 ) : (
@@ -331,18 +334,17 @@ export default function GenresManagement() {
         }
     });
 
-    const loadGenresData = async () => {
+    const loadGenresData = useCallback(() => {
         setIsGenresDataLoading(true);
-        const allGenresToLoad = await getAllGenresAsync();
-        setGenresToManage(allGenresToLoad);
+        dispatch(getAllGenresAsyncThunk());
         setTimeout(() => {
             setIsGenresDataLoading(false);
         }, 400);
-    }
+    }, [dispatch]);
 
     useEffect(() => {
         loadGenresData();
-    }, []);
+    }, [loadGenresData]);
 
     useEffect(() => {
         editGenreForm.validateFields()
@@ -354,7 +356,7 @@ export default function GenresManagement() {
                     setIsEditGenreFormSubmittable(false);
                 }
             )
-    }, [editGenreFormValues]);
+    }, [editGenreForm, editGenreFormValues]);
 
     return (
         <div className="genres-management-wrapper">

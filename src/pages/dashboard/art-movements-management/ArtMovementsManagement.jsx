@@ -34,7 +34,7 @@ import {
 } from "../../../helpers/global-constants";
 import { useSelector } from "react-redux/es/exports";
 import TextArea from "antd/es/input/TextArea";
-import { SearchOutlined, LoginOutlined, ProfileOutlined, CheckCircleOutlined } from "@ant-design/icons";
+import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
 import dayjs from "dayjs";
 
@@ -102,7 +102,6 @@ export default function ArtMovementsManagement() {
                 description: currentArtMovement.description
             });
 
-            setArtMovementStepperCurrentStep(0);
             setArtMovementToEditId(currentArtMovement.id);
         } else {
             setAddOrEditArtMovementPrimaryInformationFormValues({
@@ -114,10 +113,9 @@ export default function ArtMovementsManagement() {
             setAddOrEditArtMovementTertiaryInformationFormValues({
                 description: null
             });
-
-            setArtMovementStepperCurrentStep(0);
         }
 
+        setArtMovementStepperCurrentStep(0);
         setIsAddOrEditArtMovementModalOpened(true);
     }
 
@@ -374,10 +372,19 @@ export default function ArtMovementsManagement() {
     const switchToNextStep = () => {
         switch (artMovementStepperCurrentStep) {
             case 0:
-                addOrEditArtMovementPrimaryInformationForm.submit();
+                addOrEditArtMovementPrimaryInformationForm
+                    .validateFields()
+                    .then(() => {
+                        setArtMovementStepperCurrentStep(artMovementStepperCurrentStep + 1);
+                    })
+                    .catch((errorInfo) => {
+                        console.log('validation failed', errorInfo);
+                    });
                 break;
             case 1:
                 setArtMovementStepperCurrentStep(artMovementStepperCurrentStep + 1);
+                break;
+            default:
                 break;
         }
     }
@@ -385,10 +392,20 @@ export default function ArtMovementsManagement() {
     const switchToPreviousStep = () => {
         switch (artMovementStepperCurrentStep) {
             case addOrEditArtMovementSteps.length - 1:
-                addOrEditArtMovementTertiaryInformationForm.submit();
+                // addOrEditArtMovementTertiaryInformationForm.submit();
+                addOrEditArtMovementTertiaryInformationForm
+                    .validateFields()
+                    .then(() => {
+                        setArtMovementStepperCurrentStep(artMovementStepperCurrentStep - 1);
+                    })
+                    .catch((errorInfo) => {
+                        console.log('validation failed', errorInfo);
+                    })
                 break;
             case addOrEditArtMovementSteps.length - 2:
                 setArtMovementStepperCurrentStep(artMovementStepperCurrentStep - 1);
+                break;
+            default:
                 break;
         }
     }
@@ -402,7 +419,8 @@ export default function ArtMovementsManagement() {
                     form={addOrEditArtMovementPrimaryInformationForm}
                     initialValues={addOrEditArtMovementPrimaryInformationFormValues}
                     name="add-or-edit-art-movement-primary-information-form"
-                    onFinish={() => { setArtMovementStepperCurrentStep(artMovementStepperCurrentStep + 1) }}
+                    // onFinish={() => { setArtMovementStepperCurrentStep(artMovementStepperCurrentStep + 1) }}
+                    onFinish={(values) => { console.log('finished', values); }}
                     style={{ maxWidth: 600, padding: 10 }}
                 >
                     <Form.Item
@@ -429,7 +447,7 @@ export default function ArtMovementsManagement() {
                         name="period"
                         label="Period"
                     >
-                        <Select>
+                        <Select defaultActiveFirstOption>
                             {artMovementPeriods.map((artMovementPeriod, index) => (
                                 <Option
                                     key={`ArtMovementPeriod#${index + 1}`}
@@ -467,9 +485,10 @@ export default function ArtMovementsManagement() {
                     form={addOrEditArtMovementTertiaryInformationForm}
                     initialValues={addOrEditArtMovementTertiaryInformationFormValues}
                     name="add-or-edit-art-movement-tertiary-information-form"
-                    onFinish={() => {
-                        setArtMovementStepperCurrentStep(artMovementStepperCurrentStep - 1)
-                    }}
+                    // onFinish={() => {
+                    //     setArtMovementStepperCurrentStep(artMovementStepperCurrentStep - 1)
+                    // }}
+                    onFinish={(values) => { console.log('description', values); }}
                     style={{ maxWidth: 600, padding: 10 }}
                 >
                     <Form.Item
@@ -636,7 +655,7 @@ export default function ArtMovementsManagement() {
     useEffect(() => {
         console.log('setting values');
         console.log(addOrEditArtMovementPrimaryInformationFormValues);
-        
+
         addOrEditArtMovementPrimaryInformationForm.setFieldsValue({
             name: addOrEditArtMovementPrimaryInformationFormValues.name,
             period: addOrEditArtMovementPrimaryInformationFormValues.period,

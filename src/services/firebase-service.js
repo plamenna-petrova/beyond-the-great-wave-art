@@ -19,7 +19,7 @@ const getFirestoreRecordByIdAsync = async (collectionName, id) => {
 }
 
 const addNewRecordToFirestoreAsync = async (collectionName, recordToAdd) => {
-    await addDoc(collection(firestore, collectionName), recordToAdd);
+    return await addDoc(collection(firestore, collectionName), recordToAdd);
 }
 
 const updateFirestoreRecordAsync = async (collectionName, recordToUpdateId, updateRecordData) => {

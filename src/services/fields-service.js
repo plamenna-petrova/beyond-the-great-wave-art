@@ -17,12 +17,12 @@ const getFieldByIdAsync = async (id) => {
     return await getFirestoreRecordByIdAsync(fieldsCollectionName, id);
 }
 
-const createFieldAsync = async (fieldToCreate) => {
-    await addNewRecordToFirestoreAsync(fieldsCollectionName, fieldToCreate);
+const createFieldAsync = async (field) => {
+    await addNewRecordToFirestoreAsync(fieldsCollectionName, field);
 }
 
-const updateFieldAsync = async (fieldToUpdateId, updateFieldData) => {
-    await updateFirestoreRecordAsync(fieldsCollectionName, fieldToUpdateId, updateFieldData);
+const updateFieldAsync = async (id, field) => {
+    await updateFirestoreRecordAsync(fieldsCollectionName, id, field);
 }
 
 const deleteFieldAsync = async (fieldToDeleteId) => {
@@ -33,7 +33,7 @@ const fieldExistsAsync = async (fieldNameToFind) => {
     return await firestoreRecordExistsAsync(fieldsCollectionName, "name", fieldNameToFind);
 }
 
-export {
+const fieldsService =  {
     getAllFieldsAsync,
     getFieldByIdAsync,
     createFieldAsync,
@@ -41,3 +41,5 @@ export {
     deleteFieldAsync,
     fieldExistsAsync
 }
+
+export default fieldsService;

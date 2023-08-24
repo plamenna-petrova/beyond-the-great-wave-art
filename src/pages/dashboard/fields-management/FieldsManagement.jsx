@@ -122,7 +122,10 @@ const EditableFieldCell = ({
 }
 
 export default function FieldsManagement() {
-    const [isFieldsDataLoading, setIsFieldsDataLoading] = useState(false);
+    const fieldsDataLoadingStatus = useSelector(state => state.fields.loadingStatus);
+    const fieldsToManage = useSelector(state => state.fields.fieldsToManage);
+    const dispatch = useDispatch();
+
     const [isAddFieldModalOpened, setIsAddFieldModalOpened] = useState(false);
     const [editFieldForm] = Form.useForm();
     const [api, notificationContextHolder] = notification.useNotification();
@@ -133,9 +136,6 @@ export default function FieldsManagement() {
     const [fieldEditingKey, setFieldEditingKey] = useState('');
     const editFieldFormValues = Form.useWatch([], editFieldForm);
     const [isEditFieldFormSubmittable, setIsEditFieldFormSubmittable] = useState(true);
-
-    const fieldsToManage = useSelector(state => state.fields);
-    const dispatch = useDispatch();
 
     const openAddFieldModal = () => {
         setIsAddFieldModalOpened(true);
@@ -396,11 +396,7 @@ export default function FieldsManagement() {
     });
 
     const loadFieldsData = useCallback(() => {
-        setIsFieldsDataLoading(true);
         dispatch(getAllFieldsAsyncThunk());
-        setTimeout(() => {
-            setIsFieldsDataLoading(false);
-        }, 400);
     }, [dispatch]);
 
     useEffect(() => {
@@ -449,7 +445,7 @@ export default function FieldsManagement() {
                     }}
                     columns={mergedFieldsManagementTableColumns}
                     dataSource={fieldsToManage}
-                    loading={isFieldsDataLoading}
+                    loading={fieldsDataLoadingStatus === 'pending'}
                     rowClassName="field-editable-row"
                     pagination={{
                         defaultPageSize: 10,

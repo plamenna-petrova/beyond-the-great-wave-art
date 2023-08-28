@@ -1,117 +1,117 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import fieldsService from "../../../services/fields-service";
+import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
+import nationalitiesService from "../../../services/nationalities-service";
 
-const fieldsInitialState = {
-    fieldsToManage: [],
+const nationalitiesInitialState = {
+    nationalitiesToManage: [],
     loadingStatus: 'idle',
     currentRequestId: undefined,
     error: null
 }
 
-export const getAllFieldsAsyncThunk = createAsyncThunk(
-    "fields/getAll",
+export const getAllNationalitiesAsyncThunk = createAsyncThunk(
+    "nationalities/getAll",
     async (_, { rejectWithValue }) => {
         try {
-            const allFields = await fieldsService.getAllFieldsAsync();
-            return allFields;
+            const allNationalities = await nationalitiesService.getAllNationalitiesAsync();
+            return allNationalities;
         } catch (error) {
             return rejectWithValue(error.response.data);
         }
     }
 )
 
-export const getAllFieldsWithDeletedAsyncThunk = createAsyncThunk(
-    "fields/getAllWithDeleted",
+export const getAllNationalitiesWithDeletedAsyncThunk = createAsyncThunk(
+    "nationalities/getAllWithDeleted",
     async (_, { rejectWithValue }) => {
         try {
-            const allFieldsWithDeleted = await fieldsService.getAllFieldsWithDeletedAsync();
-            return allFieldsWithDeleted;
+            const allNationalitiesWithDeleted = await nationalitiesService.getAllNationalitiesWithDeletedAsync();
+            return allNationalitiesWithDeleted;
         } catch (error) {
-            return rejectWithValue(error.repsonse.data);
+            return rejectWithValue(error.response.data);
         }
     }
 )
 
-export const getFieldByIdAsyncThunk = createAsyncThunk(
-    "fields/getById",
+export const getNationalityByIdAsyncThunk = createAsyncThunk(
+    "nationalities/getById",
     async ({ id }, { rejectWithValue }) => {
         try {
-            const fieldById = await fieldsService.getFieldByIdAsync(id);
-            return fieldById;
+            const nationalityById = await nationalitiesService.getNationalityByIdAsync(id);
+            return nationalityById;
         } catch (error) {
             return rejectWithValue(error.response.data);
         }
     }
 )
 
-export const createFieldAsyncThunk = createAsyncThunk(
-    "fields/create",
-    async ({ fieldToCreate }, { rejectWithValue }) => {
+export const createNationalityAsyncThunk = createAsyncThunk(
+    "nationalities/create",
+    async ({ nationalityToCreate }, { rejectWithValue }) => {
         try {
-            await fieldsService.createFieldAsync(fieldToCreate);
-            return fieldToCreate;
+            await nationalitiesService.createNationalityAsync(nationalityToCreate);
+            return nationalityToCreate;
         } catch (error) {
             return rejectWithValue(error.response.data);
         }
     }
 )
 
-export const updateFieldAsyncThunk = createAsyncThunk(
-    "fields/update",
-    async ({ fieldToUpdateId, updateFieldData }, { rejectWithValue }) => {
+export const updateNationalityAsyncThunk = createAsyncThunk(
+    "nationalities/update",
+    async ({ nationalityToUpdateId, updateNationalityData }, { rejectWithValue }) => {
         try {
-            await fieldsService.updateFieldAsync(fieldToUpdateId, updateFieldData);
-            return { id: fieldToUpdateId, ...updateFieldData };
+            await nationalitiesService.updateNationalityAsync(nationalityToUpdateId, updateNationalityData);
+            return { id: nationalityToUpdateId, ...updateNationalityData };
         } catch (error) {
             return rejectWithValue(error.response.data);
         }
     }
 )
 
-export const softDeleteFieldAsyncThunk = createAsyncThunk(
-    "fields/softDelete",
-    async ({ fieldToSoftDeleteId, softDeleteFieldData }, { rejectWithValue }) => {
+export const softDeleteNationalityAsyncThunk = createAsyncThunk(
+    "nationalities/softDelete",
+    async ({ nationalityToSoftDeleteId, softDeleteNationalityData }, { rejectWithValue }) => {
         try {
-            await fieldsService.softDeleteFieldAsync(fieldToSoftDeleteId, softDeleteFieldData);
+            await nationalitiesService.softDeleteNationalityAsync(nationalityToSoftDeleteId, softDeleteNationalityData);
         } catch (error) {
             return rejectWithValue(error.response.data);
         }
     }
 )
 
-export const hardDeleteFieldAsyncThunk = createAsyncThunk(
-    "fields/hardDelete",
-    async ({ fieldToHardDeleteId }, { rejectWithValue }) => {
+export const hardDeleteNationalityAsyncThunk = createAsyncThunk(
+    "nationalities/hardDelete",
+    async ({ nationalityToHardDeleteId }, { rejectWithValue }) => {
         try {
-            await fieldsService.hardDeleteFieldAsync(fieldToHardDeleteId);
-            return fieldToHardDeleteId;
+            await nationalitiesService.hardDeleteNationalityAsync(nationalityToHardDeleteId);
+            return nationalityToHardDeleteId;
         } catch (error) {
             return rejectWithValue(error.response.data);
         }
     }
 )
 
-const fieldsSlice = createSlice({
-    name: "fields",
-    initialState: fieldsInitialState,
+const nationalitiesSlice = createSlice({
+    name: "nationalities",
+    initialState: nationalitiesInitialState,
     reducers: {},
     extraReducers: (builder) => {
         builder
-            .addCase(getAllFieldsAsyncThunk.pending, (state, action) => {
+            .addCase(getAllNationalitiesAsyncThunk.pending, (state, action) => {
                 if (state.loadingStatus === 'idle') {
                     state.loadingStatus = 'pending';
                     state.currentRequestId = action.meta.requestId;
                 }
             })
-            .addCase(getAllFieldsAsyncThunk.fulfilled, (state, action) => {
+            .addCase(getAllNationalitiesAsyncThunk.fulfilled, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
                     state.currentRequestId = undefined;
-                    state.fieldsToManage = [...action.payload];
+                    state.nationalitiesToManage = [...action.payload];
                 }
             })
-            .addCase(getAllFieldsAsyncThunk.rejected, (state, action) => {
+            .addCase(getAllNationalitiesAsyncThunk.rejected, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
@@ -119,21 +119,21 @@ const fieldsSlice = createSlice({
                     state.currentRequestId = undefined;
                 }
             })
-            .addCase(getAllFieldsWithDeletedAsyncThunk.pending, (state, action) => {
+            .addCase(getAllNationalitiesWithDeletedAsyncThunk.pending, (state, action) => {
                 if (state.loadingStatus === 'idle') {
                     state.loadingStatus = 'pending';
                     state.currentRequestId = action.meta.requestId;
                 }
             })
-            .addCase(getAllFieldsWithDeletedAsyncThunk.fulfilled, (state, action) => {
+            .addCase(getAllNationalitiesWithDeletedAsyncThunk.fulfilled, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
                     state.currentRequestId = undefined;
-                    state.fieldsToManage = [...action.payload];
+                    state.nationalitiesToManage = [...action.payload];
                 }
             })
-            .addCase(getAllFieldsWithDeletedAsyncThunk.rejected, (state, action) => {
+            .addCase(getAllNationalitiesWithDeletedAsyncThunk.rejected, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
@@ -141,13 +141,13 @@ const fieldsSlice = createSlice({
                     state.currentRequestId = undefined;
                 }
             })
-            .addCase(getFieldByIdAsyncThunk.pending, (state, action) => {
+            .addCase(getNationalityByIdAsyncThunk.pending, (state, action) => {
                 if (state.loadingStatus === 'idle') {
                     state.loadingStatus = 'pending';
                     state.currentRequestId = action.meta.requestId;
                 }
             })
-            .addCase(getFieldByIdAsyncThunk.fulfilled, (state, action) => {
+            .addCase(getNationalityByIdAsyncThunk.fulfilled, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
@@ -155,7 +155,7 @@ const fieldsSlice = createSlice({
                     return action.payload;
                 }
             })
-            .addCase(getFieldByIdAsyncThunk.rejected, (state, action) => {
+            .addCase(getNationalityByIdAsyncThunk.rejected, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
@@ -163,21 +163,21 @@ const fieldsSlice = createSlice({
                     state.currentRequestId = undefined;
                 }
             })
-            .addCase(createFieldAsyncThunk.pending, (state, action) => {
+            .addCase(createNationalityAsyncThunk.pending, (state, action) => {
                 if (state.loadingStatus === 'idle') {
                     state.loadingStatus = 'pending';
                     state.currentRequestId = action.meta.requestId;
                 }
             })
-            .addCase(createFieldAsyncThunk.fulfilled, (state, action) => {
+            .addCase(createNationalityAsyncThunk.fulfilled, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
                     state.currentRequestId = undefined;
-                    state.fieldsToManage.push(action.payload);
+                    state.nationalitiesToManage.push(action.payload);
                 }
             })
-            .addCase(createFieldAsyncThunk.rejected, (state, action) => {
+            .addCase(createNationalityAsyncThunk.rejected, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
@@ -185,23 +185,24 @@ const fieldsSlice = createSlice({
                     state.currentRequestId = undefined;
                 }
             })
-            .addCase(updateFieldAsyncThunk.pending, (state, action) => {
+            .addCase(updateNationalityAsyncThunk.pending, (state, action) => {
                 if (state.loadingStatus === 'idle') {
                     state.loadingStatus = 'pending';
                     state.currentRequestId = action.meta.requestId;
                 }
             })
-            .addCase(updateFieldAsyncThunk.fulfilled, (state, action) => {
+            .addCase(updateNationalityAsyncThunk.fulfilled, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
                     state.currentRequestId = undefined;
-                    const { id, ...fieldToSplice } = action.payload;
-                    const fieldToSpliceIndex = state.fieldsToManage.findIndex(field => field.id === id);
-                    state.fieldsToManage.splice(fieldToSpliceIndex, 1, fieldToSplice);
+                    const { id, ...nationalityToSplice } = action.payload;
+                    const nationalityToSpliceIndex = state.nationalitiesToManage
+                        .findIndex(nationality => nationality.id === id);
+                    state.nationalitiesToManage.splice(nationalityToSpliceIndex, 1, nationalityToSplice);
                 }
             })
-            .addCase(updateFieldAsyncThunk.rejected, (state, action) => {
+            .addCase(updateNationalityAsyncThunk.rejected, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
@@ -209,20 +210,20 @@ const fieldsSlice = createSlice({
                     state.currentRequestId = undefined;
                 }
             })
-            .addCase(softDeleteFieldAsyncThunk.pending, (state, action) => {
+            .addCase(softDeleteNationalityAsyncThunk.pending, (state, action) => {
                 if (state.loadingStatus === 'idle') {
                     state.loadingStatus = 'pending';
                     state.currentRequestId = action.meta.requestId;
-                }
+                } 
             })
-            .addCase(softDeleteFieldAsyncThunk.fulfilled, (state, action) => {
+            .addCase(softDeleteNationalityAsyncThunk.fulfilled, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
                     state.currentRequestId = undefined;
                 }
             })
-            .addCase(softDeleteFieldAsyncThunk.rejected, (state, action) => {
+            .addCase(softDeleteNationalityAsyncThunk.rejected, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
@@ -230,22 +231,23 @@ const fieldsSlice = createSlice({
                     state.currentRequestId = undefined;
                 }
             })
-            .addCase(hardDeleteFieldAsyncThunk.pending, (state, action) => {
+            .addCase(hardDeleteNationalityAsyncThunk.pending, (state, action) => {
                 if (state.loadingStatus === 'idle') {
                     state.loadingStatus = 'pending';
                     state.currentRequestId = action.meta.requestId;
                 }
             })
-            .addCase(hardDeleteFieldAsyncThunk.fulfilled, (state, action) => {
+            .addCase(hardDeleteNationalityAsyncThunk.fulfilled, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
                     state.currentRequestId = undefined;
                     const { id } = action.payload;
-                    state.fieldsToManage = state.fieldsToManage.filter(field => field.id === id);
+                    state.nationalitiesToManage = state.nationalitiesToManage
+                        .filter(nationality => nationality.id === id);
                 }
             })
-            .addCase(hardDeleteFieldAsyncThunk.rejected, (state, action) => {
+            .addCase(hardDeleteNationalityAsyncThunk.rejected, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
@@ -254,6 +256,6 @@ const fieldsSlice = createSlice({
                 }
             })
     }
-});
+})
 
-export default fieldsSlice.reducer;
+export default nationalitiesSlice.reducer;

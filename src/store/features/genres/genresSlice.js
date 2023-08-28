@@ -80,7 +80,7 @@ export const softDeleteGenreAsyncThunk = createAsyncThunk(
 )
 
 export const hardDeleteGenreAsyncThunk = createAsyncThunk(
-    "genres/delete",
+    "genres/hardDelete",
     async ({ genreToHardDeleteId }, { rejectWithValue }) => {
         try {
             await genresService.hardDeleteGenreAsync(genreToHardDeleteId);

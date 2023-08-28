@@ -105,15 +105,15 @@ const EditableFieldCell = ({
                     rules={[
                         {
                             required: true,
-                            message: requiredFieldErrorMessage('field', 'name')
+                            message: requiredFieldErrorMessage('field', dataIndex)
                         },
                         {
                             min: 6,
-                            message: minLengthFieldErrorMessage('field', 'name', 6)
+                            message: minLengthFieldErrorMessage('field', dataIndex, 6)
                         },
                         {
                             max: 30,
-                            message: maxLengthFieldErrorMessage('field', 'name', 30)
+                            message: maxLengthFieldErrorMessage('field', dataIndex, 30)
                         }
                     ]}
                 >
@@ -357,8 +357,8 @@ export default function FieldsManagement() {
                 editableFields.push(editFieldFormValues);
                 setFieldEditingKey('');
             }
-        } catch (errorInfo) {
-            console.log('Update Failed:', errorInfo);
+        } catch (error) {
+            console.log('Update failed:', error);
         }
     }
 

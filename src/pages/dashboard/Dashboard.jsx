@@ -51,6 +51,10 @@ export default function Dashboard() {
                             label: 'Art Movements'
                         },
                         {
+                            key: '/dashboard/nationalities-management',
+                            label: 'Nationalities'
+                        },
+                        {
                             key: '/dashboard/artists-management',
                             label: 'Artists'
                         },

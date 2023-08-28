@@ -43,7 +43,7 @@ const fieldExistsAsync = async (name) => {
     return await firestoreRecordExistsAsync(fieldsCollectionName, "name", name);
 }
 
-const fieldsService =  {
+const fieldsService = {
     getAllFieldsAsync,
     getAllFieldsWithDeletedAsync,
     getFieldByIdAsync,

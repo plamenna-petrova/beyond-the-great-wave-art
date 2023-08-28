@@ -1,13 +1,27 @@
+import {
+    addDoc,
+    collection,
+    deleteDoc,
+    doc,
+    getDocs,
+    getDoc,
+    updateDoc,
+    query,
+    where,
+    Timestamp
+} from "firebase/firestore"
+import {
+    firestore
+} from "../firebase"
 
-import { addDoc, collection, deleteDoc, doc, getDocs, getDoc, updateDoc, query, where, Timestamp } from "firebase/firestore"
-import { firestore } from "../firebase"
-
-import { firebaseAuthErrorCodes } from "../helpers/firebase-helper";
+import {
+    firebaseAuthErrorCodes
+} from "../helpers/firebase-helper";
 
 const getAllFirestoreRecordsAsync = async (collectionName) => {
     const allFirestoreRecordsQuery = query(collection(firestore, collectionName));
     const allFirestoreRecordsQuerySnapshot = await getDocs(allFirestoreRecordsQuery);
-    const mappedAllFirestoreRecordsQuerySnapshot = 
+    const mappedAllFirestoreRecordsQuerySnapshot =
         mapQuerySnapshot(allFirestoreRecordsQuerySnapshot)
         .filter(record => !record.isDeleted);
     return mappedAllFirestoreRecordsQuerySnapshot;
@@ -24,12 +38,15 @@ const getFirestoreRecordByIdAsync = async (collectionName, id) => {
     const firestoreRecordByIdReference = doc(firestore, collectionName, id);
     const firestoreRecordByIdSnapshot = await getDoc(firestoreRecordByIdReference);
     const firestoreRecordByIdData = firestoreRecordByIdSnapshot.exists() ? firestoreRecordByIdSnapshot.data() : null;
-    return { id, ...firestoreRecordByIdData };
+    return {
+        id,
+        ...firestoreRecordByIdData
+    };
 }
 
 const addNewRecordToFirestoreAsync = async (collectionName, recordToAdd) => {
     recordToAdd.createdOn = Timestamp.now();
-    recordToAdd.modifiedOn= null;
+    recordToAdd.modifiedOn = null;
     recordToAdd.modifiedBy = null;
     recordToAdd.isDeleted = false;
     recordToAdd.deletedOn = null;
@@ -55,13 +72,17 @@ const hardDeleteFirestoreRecordAsync = async (collectionName, recordToHardDelete
 }
 
 const restoreFirestoreRecordAsync = async (collectionName, recordToRestoreId) => {
-    const restoreRecordData = { isDeleted: false, deletedOn: null, deletedBy: null };
+    const restoreRecordData = {
+        isDeleted: false,
+        deletedOn: null,
+        deletedBy: null
+    };
     await updateFirestoreRecordAsync(collectionName, recordToRestoreId, restoreRecordData);
 }
 
 const firestoreRecordExistsAsync = async (collectionName, targetPropertyName, valueToCheck) => {
     const firestoreRecordExistsQuery = query(
-        collection(firestore, collectionName), 
+        collection(firestore, collectionName),
         where(targetPropertyName, "==", valueToCheck)
     );
     const firestoreRecordExistsQuerySnapshot = await getDocs(firestoreRecordExistsQuery);
@@ -70,7 +91,10 @@ const firestoreRecordExistsAsync = async (collectionName, targetPropertyName, va
 }
 
 const mapQuerySnapshot = (querySnapshot) => {
-    return querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    return querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data()
+    }));
 }
 
 const handleFirebaseAuthError = (error, notificationMessage, errorNotificationHandler) => {

@@ -102,15 +102,15 @@ const EditableGenreCell = ({
                     rules={[
                         {
                             required: true,
-                            message: requiredFieldErrorMessage('genre', 'name')
+                            message: requiredFieldErrorMessage('genre', dataIndex)
                         },
                         {
                             min: 4,
-                            message: minLengthFieldErrorMessage('genre', 'name', 4)
+                            message: minLengthFieldErrorMessage('genre', dataIndex, 4)
                         },
                         {
                             max: 35,
-                            message: maxLengthFieldErrorMessage('genre', 'name', 35)
+                            message: maxLengthFieldErrorMessage('genre', dataIndex, 35)
                         }
                     ]}
                 >

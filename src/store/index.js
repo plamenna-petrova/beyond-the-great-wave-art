@@ -1,7 +1,7 @@
 
 import { configureStore } from '@reduxjs/toolkit';
 
-import authReducer from './features/auth/authSlice'; 
+import authReducer from './features/auth/authSlice';
 import loadingReducer from './features/loading/loadingSlice';
 import fieldsReducer from './features/fields/fieldsSlice';
 import genresReducer from './features/genres/genresSlice';
@@ -12,5 +12,9 @@ export const store = configureStore({
         loading: loadingReducer,
         fields: fieldsReducer,
         genres: genresReducer
-    }
+    },
+    middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware({
+            serializableCheck: false
+        })
 });

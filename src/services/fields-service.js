@@ -1,16 +1,22 @@
 import { 
     addNewRecordToFirestoreAsync, 
-    deleteFirestoreRecordAsync, 
+    hardDeleteFirestoreRecordAsync, 
     firestoreRecordExistsAsync, 
     getAllFirestoreRecordsAsync, 
     getFirestoreRecordByIdAsync, 
-    updateFirestoreRecordAsync 
+    updateFirestoreRecordAsync, 
+    softDeleteFirestoreRecordAsync,
+    getAllFirestoreRecordsWithDeletedAsync
 } from "./firebase-service";
 
 const fieldsCollectionName = "fields";
 
 const getAllFieldsAsync = async () => {
     return await getAllFirestoreRecordsAsync(fieldsCollectionName);
+}
+
+const getAllFieldsWithDeletedAsync = async () => {
+    return await getAllFirestoreRecordsWithDeletedAsync(fieldsCollectionName);
 }
 
 const getFieldByIdAsync = async (id) => {
@@ -25,20 +31,26 @@ const updateFieldAsync = async (id, field) => {
     await updateFirestoreRecordAsync(fieldsCollectionName, id, field);
 }
 
-const deleteFieldAsync = async (fieldToDeleteId) => {
-    await deleteFirestoreRecordAsync(fieldsCollectionName, fieldToDeleteId);
+const softDeleteFieldAsync = async (id, field) => {
+    await softDeleteFirestoreRecordAsync(fieldsCollectionName, id, field);
 }
 
-const fieldExistsAsync = async (fieldNameToFind) => {
-    return await firestoreRecordExistsAsync(fieldsCollectionName, "name", fieldNameToFind);
+const hardDeleteFieldAsync = async (id) => {
+    await hardDeleteFirestoreRecordAsync(fieldsCollectionName, id);
+}
+
+const fieldExistsAsync = async (name) => {
+    return await firestoreRecordExistsAsync(fieldsCollectionName, "name", name);
 }
 
 const fieldsService =  {
     getAllFieldsAsync,
+    getAllFieldsWithDeletedAsync,
     getFieldByIdAsync,
     createFieldAsync,
     updateFieldAsync,
-    deleteFieldAsync,
+    softDeleteFieldAsync,
+    hardDeleteFieldAsync,
     fieldExistsAsync
 }
 

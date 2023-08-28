@@ -4,14 +4,82 @@ import genresService from "../../../services/genres-service";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
-import { 
+import {
     maxLengthFieldErrorMessage,
-    minLengthFieldErrorMessage, 
-    requiredFieldErrorMessage 
+    minLengthFieldErrorMessage,
+    requiredFieldErrorMessage
 } from "../../../helpers/global-constants";
 import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux/es/exports";
-import { getAllGenresAsyncThunk } from "../../../store/features/genres/genresSlice";
+import {
+    createGenreAsyncThunk,
+    softDeleteGenreAsyncThunk,
+    getAllGenresAsyncThunk,
+    updateGenreAsyncThunk
+} from "../../../store/features/genres/genresSlice";
+
+const AddGenreModal = ({ open, onCancel, onFinish, onFinishFailed }) => {
+    const [addGenreForm] = Form.useForm();
+
+    const addGenreFormLayout = {
+        labelCol: {
+            span: 8
+        },
+        wrapperCol: {
+            span: 16
+        }
+    }
+
+    return (
+        <Modal
+            title="Add Genre"
+            centered
+            open={open}
+            onOk={() => {
+                addGenreForm
+                    .validateFields()
+                    .then((values) => {
+                        onFinish(values);
+                        addGenreForm.resetFields();
+                    });
+            }}
+            onCancel={() => {
+                addGenreForm.resetFields();
+                onCancel();
+            }}
+        >
+            <Form
+                {...addGenreFormLayout}
+                form={addGenreForm}
+                name="add-genre-form"
+                onFinish={onFinish}
+                onFinishFailed={onFinishFailed}
+                style={{ maxWidth: 6000 }}
+            >
+                <Form.Item
+                    name={['genre', 'name']}
+                    label="Name"
+                    rules={[
+                        {
+                            required: true,
+                            message: requiredFieldErrorMessage('genre', 'name')
+                        },
+                        {
+                            min: 4,
+                            message: minLengthFieldErrorMessage('genre', 'name')
+                        },
+                        {
+                            max: 35,
+                            message: maxLengthFieldErrorMessage('genre', 'name')
+                        }
+                    ]}
+                >
+                    <Input />
+                </Form.Item>
+            </Form>
+        </Modal>
+    )
+}
 
 const EditableGenreCell = ({
     editing,
@@ -56,9 +124,11 @@ const EditableGenreCell = ({
 }
 
 export default function GenresManagement() {
-    const [isGenresDataLoading, setIsGenresDataLoading] = useState(false);
-    const [isAddOrEditGenreModalOpened, setIsAddOrEditGenreModalOpened] = useState(false);
-    const [addGenreForm] = Form.useForm();
+    const genresDataLoadingStatus = useSelector(state => state.genres.loadingStatus);
+    const genresToManage = useSelector(state => state.genres.genresToManage);
+    const currentUser = useSelector(state => state.auth.currentUser);
+    const dispatch = useDispatch();
+    const [isAddGenreModalOpened, setIsAddGenreModalOpened] = useState(false);
     const [editGenreForm] = Form.useForm();
     const [api, notificationContextHolder] = notification.useNotification();
     const [genreSearchText, setGenreSearchText] = useState('');
@@ -69,25 +139,12 @@ export default function GenresManagement() {
     const editGenreFormValues = Form.useWatch([], editGenreForm);
     const [isEditGenreFormSubmittable, setIsEditGenreFormSubmittable] = useState(true);
 
-    const genresToManage = useSelector(state => state.genres);
-    const dispatch = useDispatch();
-
     const openAddOrEditGenreModal = () => {
-        setIsAddOrEditGenreModalOpened(true);
+        setIsAddGenreModalOpened(true);
     }
 
-    const handleCancelAddOrEditGenreModal = () => {
-        addGenreForm.resetFields();
-        setIsAddOrEditGenreModalOpened(false);
-    }
-
-    const addOrEditGenreModalFormLayout = {
-        labelCol: {
-            span: 8
-        },
-        wrapperCol: {
-            span: 16
-        }
+    const handleCancelAddGenreModal = () => {
+        setIsAddGenreModalOpened(false);
     }
 
     const onAddGenreFormFinish = async (addOrEditGenreFormValues) => {
@@ -98,10 +155,21 @@ export default function GenresManagement() {
             return;
         }
 
-        await genresService.createGenreAsync(genre);
-        setIsAddOrEditGenreModalOpened(false);
-        addGenreForm.resetFields();
-        loadGenresData();
+        dispatch(createGenreAsyncThunk({
+            genreToCreate: {
+                createdBy: currentUser.username,
+                ...genre
+            }
+        }))
+            .unwrap()
+            .then((_) => {
+                loadGenresData();
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+
+        setIsAddGenreModalOpened(false);
     }
 
     const onAddGenreFormFinishFailed = (error) => {
@@ -114,8 +182,19 @@ export default function GenresManagement() {
             icon: <ExclamationCircleOutlined />,
             content: `Do you really wish to remove ${genreToDelete.name}?`,
             async onOk() {
-                await genresService.deleteGenreAsync(genreToDelete.id);
-                loadGenresData();
+                dispatch(softDeleteGenreAsyncThunk({
+                    genreToSoftDeleteId: genreToDelete.id,
+                    softDeleteGenreData: {
+                        deletedBy: currentUser.username
+                    }
+                }))
+                    .unwrap()
+                    .then((_) => {
+                        loadGenresData();
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    })
             },
             centered: true
         })
@@ -259,10 +338,19 @@ export default function GenresManagement() {
 
             if (editedGenreIndex > - 1) {
                 const genreToEdit = editableGenres[editedGenreIndex];
-                await genresService.updateGenreAsync(genreToEdit.id, { ...genreToEdit, ...genre });
-                editableGenres.splice(editedGenreIndex, 1, { ...genreToEdit, ...genre });
-                loadGenresData();
-                setGenreEditingKey('');
+                dispatch(updateGenreAsyncThunk({
+                    genreToUpdateId: genreToEdit.id,
+                    updateGenreData: { modifiedBy: currentUser.username, ...genre }
+                }))
+                    .unwrap()
+                    .then((_) => {
+                        editableGenres.splice(editedGenreIndex, 1, { ...genreToEdit, ...genre });
+                        loadGenresData();
+                        setGenreEditingKey('');
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    })
             } else {
                 editableGenres.push(editGenreFormValues);
                 setGenreEditingKey('');
@@ -335,11 +423,7 @@ export default function GenresManagement() {
     });
 
     const loadGenresData = useCallback(() => {
-        setIsGenresDataLoading(true);
         dispatch(getAllGenresAsyncThunk());
-        setTimeout(() => {
-            setIsGenresDataLoading(false);
-        }, 400);
     }, [dispatch]);
 
     useEffect(() => {
@@ -372,43 +456,12 @@ export default function GenresManagement() {
                     <Button type="dashed">Import Genres</Button>
                 </Col>
             </Row>
-            <Modal
-                title={'Add Genre'}
-                centered
-                open={isAddOrEditGenreModalOpened}
-                onOk={addGenreForm.submit}
-                onCancel={handleCancelAddOrEditGenreModal}
-            >
-                <Form
-                    {...addOrEditGenreModalFormLayout}
-                    form={addGenreForm}
-                    name="add-genre-form"
-                    onFinish={onAddGenreFormFinish}
-                    onFinishFailed={onAddGenreFormFinishFailed}
-                    style={{ maxWidth: 600 }}
-                >
-                    <Form.Item
-                        name={['genre', 'name']}
-                        label="Name"
-                        rules={[
-                            {
-                                required: true,
-                                message: requiredFieldErrorMessage('genre', 'name')
-                            },
-                            {
-                                min: 4,
-                                message: minLengthFieldErrorMessage('genre', 'name', 4)
-                            },
-                            {
-                                max: 35,
-                                message: maxLengthFieldErrorMessage('genre', 'name', 35)
-                            }
-                        ]}
-                    >
-                        <Input />
-                    </Form.Item>
-                </Form>
-            </Modal>
+            <AddGenreModal
+                open={isAddGenreModalOpened}
+                onCancel={handleCancelAddGenreModal}
+                onFinish={onAddGenreFormFinish}
+                onFinishFailed={onAddGenreFormFinishFailed}
+            />
             <Form form={editGenreForm} component={false} autoComplete="off">
                 <Table
                     rowKey={(genre) => genre.id}
@@ -419,7 +472,7 @@ export default function GenresManagement() {
                     }}
                     columns={mergedGenresManagementTableColumns}
                     dataSource={genresToManage}
-                    loading={isGenresDataLoading}
+                    loading={genresDataLoadingStatus === 'pending'}
                     rowClassName="genre-editable-row"
                     pagination={{
                         defaultPageSize: 10,

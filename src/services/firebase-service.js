@@ -1,5 +1,5 @@
 
-import { addDoc, collection, deleteDoc, doc, getDocs, getDoc, updateDoc, query, where } from "firebase/firestore"
+import { addDoc, collection, deleteDoc, doc, getDocs, getDoc, updateDoc, query, where, Timestamp } from "firebase/firestore"
 import { firestore } from "../firebase"
 
 import { firebaseAuthErrorCodes } from "../helpers/firebase-helper";
@@ -7,8 +7,17 @@ import { firebaseAuthErrorCodes } from "../helpers/firebase-helper";
 const getAllFirestoreRecordsAsync = async (collectionName) => {
     const allFirestoreRecordsQuery = query(collection(firestore, collectionName));
     const allFirestoreRecordsQuerySnapshot = await getDocs(allFirestoreRecordsQuery);
-    const mappedAllFirestoreRecordsQuerySnapshot = mapQuerySnapshot(allFirestoreRecordsQuerySnapshot);
+    const mappedAllFirestoreRecordsQuerySnapshot = 
+        mapQuerySnapshot(allFirestoreRecordsQuerySnapshot)
+        .filter(record => !record.isDeleted);
     return mappedAllFirestoreRecordsQuerySnapshot;
+}
+
+const getAllFirestoreRecordsWithDeletedAsync = async (collectionName) => {
+    const allFirestoreRecordsWithDeletedQuery = query(collection(firestore, collectionName));
+    const allFirestoreRecordsWithDeletedQuerySnapshot = await getDocs(allFirestoreRecordsWithDeletedQuery);
+    const mappedAllFirestoreRecordsWithDeletedQuerySnapshot = mapQuerySnapshot(allFirestoreRecordsWithDeletedQuerySnapshot);
+    return mappedAllFirestoreRecordsWithDeletedQuerySnapshot;
 }
 
 const getFirestoreRecordByIdAsync = async (collectionName, id) => {
@@ -19,15 +28,35 @@ const getFirestoreRecordByIdAsync = async (collectionName, id) => {
 }
 
 const addNewRecordToFirestoreAsync = async (collectionName, recordToAdd) => {
-    return await addDoc(collection(firestore, collectionName), recordToAdd);
+    recordToAdd.createdOn = Timestamp.now();
+    recordToAdd.modifiedOn= null;
+    recordToAdd.modifiedBy = null;
+    recordToAdd.isDeleted = false;
+    recordToAdd.deletedOn = null;
+    recordToAdd.deletedBy = null;
+    await addDoc(collection(firestore, collectionName), recordToAdd);
 }
 
 const updateFirestoreRecordAsync = async (collectionName, recordToUpdateId, updateRecordData) => {
+    updateRecordData.modifiedOn = Timestamp.now();
+    console.log('UPDATED TO SOFT DELETE');
+    console.log(updateRecordData);
     await updateDoc(doc(firestore, collectionName, recordToUpdateId), updateRecordData);
 }
 
-const deleteFirestoreRecordAsync = async (collectionName, recordToDeleteId) => {
-    await deleteDoc(doc(firestore, collectionName, recordToDeleteId));
+const softDeleteFirestoreRecordAsync = async (collectionName, recordToSoftDeleteId, softDeleteData) => {
+    softDeleteData.isDeleted = true;
+    softDeleteData.deletedOn = Timestamp.now();
+    await updateFirestoreRecordAsync(collectionName, recordToSoftDeleteId, softDeleteData);
+}
+
+const hardDeleteFirestoreRecordAsync = async (collectionName, recordToHardDeleteId) => {
+    await deleteDoc(doc(firestore, collectionName, recordToHardDeleteId));
+}
+
+const restoreFirestoreRecordAsync = async (collectionName, recordToRestoreId) => {
+    const restoreRecordData = { isDeleted: false, deletedOn: null, deletedBy: null };
+    await updateFirestoreRecordAsync(collectionName, recordToRestoreId, restoreRecordData);
 }
 
 const firestoreRecordExistsAsync = async (collectionName, targetPropertyName, valueToCheck) => {
@@ -97,10 +126,13 @@ export {
     firebaseAuthErrorCodes,
     mapQuerySnapshot,
     getAllFirestoreRecordsAsync,
+    getAllFirestoreRecordsWithDeletedAsync,
     getFirestoreRecordByIdAsync,
     addNewRecordToFirestoreAsync,
     updateFirestoreRecordAsync,
-    deleteFirestoreRecordAsync,
+    softDeleteFirestoreRecordAsync,
+    hardDeleteFirestoreRecordAsync,
+    restoreFirestoreRecordAsync,
     firestoreRecordExistsAsync,
     handleFirebaseAuthError
 }

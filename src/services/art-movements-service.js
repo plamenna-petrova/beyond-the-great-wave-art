@@ -1,6 +1,6 @@
 import { 
     addNewRecordToFirestoreAsync, 
-    deleteFirestoreRecordAsync, 
+    hardDeleteFirestoreRecordAsync, 
     firestoreRecordExistsAsync, 
     getAllFirestoreRecordsAsync, 
     getFirestoreRecordByIdAsync, 
@@ -26,7 +26,7 @@ const updateArtMovementAsync = async (artMovementToUpdateId, updateArtMovementDa
 }
 
 const deleteArtMovementAsync = async (artMovementToDeleteId) => {
-    await deleteFirestoreRecordAsync(artMovementsCollectionName, artMovementToDeleteId);
+    await hardDeleteFirestoreRecordAsync(artMovementsCollectionName, artMovementToDeleteId);
 }
 
 const artMovementExistsAsync = async (artMovementNameToFind) => {

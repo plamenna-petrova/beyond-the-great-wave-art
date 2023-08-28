@@ -14,7 +14,12 @@ import {
 import './FieldsManagement.css';
 import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux/es/exports";
-import { createFieldAsyncThunk, getAllFieldsAsyncThunk } from "../../../store/features/fields/fieldsSlice";
+import {
+    createFieldAsyncThunk,
+    softDeleteFieldAsyncThunk,
+    getAllFieldsAsyncThunk,
+    updateFieldAsyncThunk
+} from "../../../store/features/fields/fieldsSlice";
 
 const AddFieldModal = ({ open, onCancel, onFinish, onFinishFailed }) => {
     const [addFieldForm] = Form.useForm();
@@ -30,7 +35,7 @@ const AddFieldModal = ({ open, onCancel, onFinish, onFinishFailed }) => {
 
     return (
         <Modal
-            title={'Add Field'}
+            title="Add Field"
             centered
             open={open}
             onOk={() => {
@@ -124,8 +129,8 @@ const EditableFieldCell = ({
 export default function FieldsManagement() {
     const fieldsDataLoadingStatus = useSelector(state => state.fields.loadingStatus);
     const fieldsToManage = useSelector(state => state.fields.fieldsToManage);
+    const currentUser = useSelector(state => state.auth.currentUser);
     const dispatch = useDispatch();
-
     const [isAddFieldModalOpened, setIsAddFieldModalOpened] = useState(false);
     const [editFieldForm] = Form.useForm();
     const [api, notificationContextHolder] = notification.useNotification();
@@ -153,16 +158,20 @@ export default function FieldsManagement() {
             return;
         }
 
-        dispatch(createFieldAsyncThunk())
+        dispatch(createFieldAsyncThunk({
+            fieldToCreate: {
+                createdBy: currentUser.username,
+                ...field
+            }
+        }))
             .unwrap()
-            .then(data => {
-                console.log('after creation of field');
-                console.log(data);
+            .then((_) => {
+                loadFieldsData();
             })
             .catch((error) => {
-                console.log('something went wrong');
                 console.log(error);
             });
+
         setIsAddFieldModalOpened(false);
     }
 
@@ -176,8 +185,19 @@ export default function FieldsManagement() {
             icon: <ExclamationCircleOutlined />,
             content: `Do you really wish to remove ${fieldToDelete.name}?`,
             async onOk() {
-                await fieldsService.deleteFieldAsync(fieldToDelete.id);
-                loadFieldsData();
+                dispatch(softDeleteFieldAsyncThunk({
+                    fieldToSoftDeleteId: fieldToDelete.id,
+                    softDeleteFieldData: {
+                        deletedBy: currentUser.username
+                    }
+                }))
+                    .unwrap()
+                    .then((_) => {
+                        loadFieldsData();
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    })
             },
             centered: true
         })
@@ -320,10 +340,19 @@ export default function FieldsManagement() {
 
             if (editedFieldIndex > -1) {
                 const fieldToEdit = editableFields[editedFieldIndex];
-                await fieldsService.updateFieldAsync(fieldToEdit.id, { ...fieldToEdit, ...field });
-                editableFields.splice(editedFieldIndex, 1, { ...fieldToEdit, ...field });
-                loadFieldsData();
-                setFieldEditingKey('');
+                dispatch(updateFieldAsyncThunk({
+                    fieldToUpdateId: fieldToEdit.id,
+                    updateFieldData: { modifiedBy: currentUser.username, ...field }
+                }))
+                    .unwrap()
+                    .then((_) => {
+                        editableFields.splice(editedFieldIndex, 1, { ...fieldToEdit, ...field });
+                        loadFieldsData();
+                        setFieldEditingKey('');
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    });
             } else {
                 editableFields.push(editFieldFormValues);
                 setFieldEditingKey('');

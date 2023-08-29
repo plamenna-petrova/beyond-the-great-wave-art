@@ -4,7 +4,8 @@ import {
     firestoreRecordExistsAsync, 
     getAllFirestoreRecordsAsync, 
     getFirestoreRecordByIdAsync, 
-    updateFirestoreRecordAsync 
+    updateFirestoreRecordAsync, 
+    softDeleteFirestoreRecordAsync
 } from "./firebase-service";
 
 const artMovementsCollectionName = "art-movements";
@@ -13,31 +14,43 @@ const getAllArtMovementsAsync = async () => {
     return await getAllFirestoreRecordsAsync(artMovementsCollectionName);
 }
 
+const getAllArtMovementWithDeletedAsync = async () => {
+    return await getAllArtMovementWithDeletedAsync(artMovementsCollectionName);
+}
+
 const getArtMovementByIdAsync = async (id) => {
     return await getFirestoreRecordByIdAsync(artMovementsCollectionName, id);
 }
 
-const createArtMovementAsync = async (artMovementToCreate) => {
-    await addNewRecordToFirestoreAsync(artMovementsCollectionName, artMovementToCreate);
+const createArtMovementAsync = async (artMovement) => {
+    await addNewRecordToFirestoreAsync(artMovementsCollectionName, artMovement);
 }
 
-const updateArtMovementAsync = async (artMovementToUpdateId, updateArtMovementData) => {
-    await updateFirestoreRecordAsync(artMovementsCollectionName, artMovementToUpdateId, updateArtMovementData);
+const updateArtMovementAsync = async (id, artMovement) => {
+    await updateFirestoreRecordAsync(artMovementsCollectionName, id, artMovement);
 }
 
-const deleteArtMovementAsync = async (artMovementToDeleteId) => {
-    await hardDeleteFirestoreRecordAsync(artMovementsCollectionName, artMovementToDeleteId);
+const softDeleteArtMovementAsync = async (id, artMovement) => {
+    await softDeleteFirestoreRecordAsync(artMovementsCollectionName, id, artMovement);
 }
 
-const artMovementExistsAsync = async (artMovementNameToFind) => {
-    return await firestoreRecordExistsAsync(artMovementsCollectionName, "name", artMovementNameToFind);
+const hardDeleteArtMovementAsync = async (id) => {
+    await hardDeleteFirestoreRecordAsync(artMovementsCollectionName, id);
 }
 
-export {
+const artMovementExistsAsync = async (name) => {
+    return await firestoreRecordExistsAsync(artMovementsCollectionName, "name", name);
+}
+
+const artMovementsService = {
     getAllArtMovementsAsync,
+    getAllArtMovementWithDeletedAsync,
     getArtMovementByIdAsync,
     createArtMovementAsync,
     updateArtMovementAsync,
-    deleteArtMovementAsync,
+    softDeleteArtMovementAsync,
+    hardDeleteArtMovementAsync,
     artMovementExistsAsync
 }
+
+export default artMovementsService;

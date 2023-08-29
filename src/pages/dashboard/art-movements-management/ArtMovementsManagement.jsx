@@ -18,13 +18,7 @@ import {
     message
 } from "antd";
 import { useState, useRef } from "react"
-import {
-    artMovementExistsAsync,
-    createArtMovementAsync,
-    updateArtMovementAsync,
-    getAllArtMovementsAsync,
-    deleteArtMovementAsync
-} from "../../../services/art-movements-service";
+import artMovementsService from "../../../services/art-movements-service";
 import { ExclamationCircleOutlined } from "@ant-design/icons";
 import { useEffect } from "react";
 import {
@@ -32,11 +26,13 @@ import {
     minLengthFieldErrorMessage,
     requiredFieldErrorMessage
 } from "../../../helpers/global-constants";
-import { useSelector } from "react-redux/es/exports";
+import { useSelector, useDispatch } from "react-redux/es/exports";
 import TextArea from "antd/es/input/TextArea";
 import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
 import dayjs from "dayjs";
+import { useCallback } from "react";
+import { createArtMovementAsyncThunk, getAllArtMovementsAsyncThunk, softDeleteArtMovementAsyncThunk, updateArtMovementAsyncThunk } from "../../../store/features/art-movements/artMovementsSlice";
 
 export const artMovementPeriods = [
     'Ancient Egyptian Art',
@@ -55,8 +51,10 @@ export const artMovementPeriods = [
 ]
 
 export default function ArtMovementsManagement() {
-    const [artMovementsToManage, setArtMovementsToManage] = useState([]);
-    const [isArtMovementsDataLoading, setIsArtMovementsDataLoading] = useState(false);
+    const artMovementsDataLoadingStatus = useSelector(state => state.artMovements.loadingStatus);
+    const artMovementsToManage = useSelector(state => state.artMovements.artMovementsToManage);
+    const currentUser = useSelector(state => state.auth.currentUser);
+    const dispatch = useDispatch();
     const [isAddOrEditArtMovementModalOpened, setIsAddOrEditArtMovementModalOpened] = useState(false);
     const [artMovementToEditId, setArtMovementToEditId] = useState(null);
     const [addOrEditArtMovementPrimaryInformationForm] = Form.useForm();
@@ -68,7 +66,6 @@ export default function ArtMovementsManagement() {
     const { confirm, info } = Modal;
     const { RangePicker } = DatePicker;
     const { Option } = Select;
-    const currentUser = useSelector((state) => state.auth.currentUser);
     const [filteredArtMovementsInfo, setFilteredArtMovementsInfo] = useState({});
     const [selectedArtMovementsRowKeys, setSelectedArtMovementsRowKeys] = useState([]);
     const { token } = theme.useToken();
@@ -150,27 +147,42 @@ export default function ArtMovementsManagement() {
         }
 
         if (!artMovementToEditId) {
-            if (await artMovementExistsAsync(name)) {
+            if (await artMovementsService.artMovementExistsAsync(name)) {
                 openArtMovementsManagementNotificationWithIcon('warning', 'Oops', 'Such art movement already exists!');
                 return;
             }
 
-            artMovementToManage.createdOn = new Date().getTime();
-            artMovementToManage.createdBy = currentUser.username;
-            artMovementToManage.modifiedOn = null;
-            artMovementToManage.modifiedBy = null;
-
-            await createArtMovementAsync(artMovementToManage);
+            dispatch(createArtMovementAsyncThunk({
+                artMovementToCreate: {
+                    createdBy: currentUser.username,
+                    ...artMovementToManage
+                }
+            }))
+                .unwrap()
+                .then((_) => {
+                    loadArtMovementsData();
+                    setIsAddOrEditArtMovementModalOpened(false);
+                })
+                .catch((error) => {
+                    console.log(error);
+                })
         } else {
-            artMovementToManage.modifiedOn = new Date().getTime();
-            artMovementToManage.modifiedBy = currentUser.username;
-
-            await updateArtMovementAsync(artMovementToEditId, artMovementToManage);
-            setArtMovementToEditId(null);
+            dispatch(updateArtMovementAsyncThunk({
+                artMovementToUpdateId: artMovementToEditId,
+                updateArtMovementData: { 
+                    modifiedBy: currentUser.username, 
+                    ...artMovementToManage 
+                }
+            }))
+                .unwrap()
+                .then((_) => {
+                    loadArtMovementsData();
+                    setIsAddOrEditArtMovementModalOpened(false);
+                })
+                .catch((error) => {
+                    console.log(error);
+                })
         }
-
-        setIsAddOrEditArtMovementModalOpened(false);
-        loadArtMovementsData();
     }
 
     const onAddOrEditArtMovementFormFinishFailed = (error) => {
@@ -240,8 +252,19 @@ export default function ArtMovementsManagement() {
             icon: <ExclamationCircleOutlined />,
             content: `Do you really wish to remove ${artMovementToDelete.name}?`,
             async onOk() {
-                await deleteArtMovementAsync(artMovementToDelete.id);
-                loadArtMovementsData();
+                dispatch(softDeleteArtMovementAsyncThunk({
+                    artMovementToSoftDeleteId: artMovementToDelete.id,
+                    softDeleteArtMovementData: {
+                        deletedBy: currentUser.username
+                    }
+                }))
+                    .unwrap()
+                    .then((_) => {
+                        loadArtMovementsData();
+                    })
+                    .catch((error) => {
+                        console.log(error);
+                    })
             },
             centered: true
         })
@@ -365,7 +388,6 @@ export default function ArtMovementsManagement() {
     };
 
     const onSelectedArtMovementsRowKeysChange = (newSelectedArtMovementsRowKeys) => {
-        console.log('selected row keys changed: ', newSelectedArtMovementsRowKeys);
         setSelectedArtMovementsRowKeys(newSelectedArtMovementsRowKeys);
     }
 
@@ -377,8 +399,8 @@ export default function ArtMovementsManagement() {
                     .then(() => {
                         setArtMovementStepperCurrentStep(artMovementStepperCurrentStep + 1);
                     })
-                    .catch((errorInfo) => {
-                        console.log('validation failed', errorInfo);
+                    .catch((error) => {
+                        console.log('validation failed', error);
                     });
                 break;
             case 1:
@@ -639,18 +661,13 @@ export default function ArtMovementsManagement() {
         }
     ]
 
-    const loadArtMovementsData = async () => {
-        setIsArtMovementsDataLoading(true);
-        const allArtMovementsToLoad = await getAllArtMovementsAsync();
-        setArtMovementsToManage(allArtMovementsToLoad);
-        setTimeout(() => {
-            setIsArtMovementsDataLoading(false);
-        }, 400);
-    }
+    const loadArtMovementsData = useCallback(() => {
+        dispatch(getAllArtMovementsAsyncThunk());
+    }, [dispatch])
 
     useEffect(() => {
         loadArtMovementsData();
-    }, []);
+    }, [loadArtMovementsData]);
 
     useEffect(() => {
         console.log('setting values');
@@ -742,7 +759,7 @@ export default function ArtMovementsManagement() {
                     rowKey={(artMovement) => artMovement.id}
                     columns={artMovementsManagementTableColumns}
                     dataSource={artMovementsToManage}
-                    loading={isArtMovementsDataLoading}
+                    loading={artMovementsDataLoadingStatus === 'pending'}
                     pagination={{
                         defaultPageSize: 10,
                         showSizeChanger: true,

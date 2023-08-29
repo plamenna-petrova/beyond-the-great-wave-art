@@ -397,21 +397,22 @@ export default function NationalitiesManagement() {
         }
     ]
 
-    const mergedNationalitiesManagementTableColumns = nationalitiesManagementTableColumns.map((nationalitiesManagementTableCol) => {
-        if (!nationalitiesManagementTableCol.editable) {
-            return nationalitiesManagementTableCol;
-        }
+    const mergedNationalitiesManagementTableColumns = nationalitiesManagementTableColumns
+        .map((nationalitiesManagementTableCol) => {
+            if (!nationalitiesManagementTableCol.editable) {
+                return nationalitiesManagementTableCol;
+            }
 
-        return {
-            ...nationalitiesManagementTableCol,
-            onCell: (nationality) => ({
-                nationality,
-                dataIndex: nationalitiesManagementTableCol.dataIndex,
-                inputType: 'text',
-                title: nationalitiesManagementTableCol.title,
-                editing: isNationalityEdited(nationality)
-            })
-        }
+            return {
+                ...nationalitiesManagementTableCol,
+                onCell: (nationality) => ({
+                    nationality,
+                    dataIndex: nationalitiesManagementTableCol.dataIndex,
+                    inputType: 'text',
+                    title: nationalitiesManagementTableCol.title,
+                    editing: isNationalityEdited(nationality)
+                })
+            }
     })
 
     const loadNationalitiesData = useCallback(() => {

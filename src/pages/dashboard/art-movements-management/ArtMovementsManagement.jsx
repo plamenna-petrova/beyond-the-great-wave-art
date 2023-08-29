@@ -15,6 +15,7 @@ import {
     Typography,
     theme,
     Steps,
+    Upload,
     message
 } from "antd";
 import { useState, useRef } from "react"
@@ -28,11 +29,18 @@ import {
 } from "../../../helpers/global-constants";
 import { useSelector, useDispatch } from "react-redux/es/exports";
 import TextArea from "antd/es/input/TextArea";
-import { SearchOutlined } from "@ant-design/icons";
+import { SearchOutlined, UploadOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
 import dayjs from "dayjs";
 import { useCallback } from "react";
-import { createArtMovementAsyncThunk, getAllArtMovementsAsyncThunk, softDeleteArtMovementAsyncThunk, updateArtMovementAsyncThunk } from "../../../store/features/art-movements/artMovementsSlice";
+import { 
+    createArtMovementAsyncThunk, 
+    getAllArtMovementsAsyncThunk, 
+    softDeleteArtMovementAsyncThunk, 
+    updateArtMovementAsyncThunk 
+} from "../../../store/features/art-movements/artMovementsSlice";
+import { firestore, storage } from "../../../firebase";
+import { Timestamp } from "firebase/firestore";
 
 export const artMovementPeriods = [
     'Ancient Egyptian Art',
@@ -58,6 +66,12 @@ export default function ArtMovementsManagement() {
     const [isAddOrEditArtMovementModalOpened, setIsAddOrEditArtMovementModalOpened] = useState(false);
     const [artMovementToEditId, setArtMovementToEditId] = useState(null);
     const [addOrEditArtMovementPrimaryInformationForm] = Form.useForm();
+    const [artMovementImageFileList, setArtMovementImageFileList] = useState([]);
+    const [isImageUploadActive, setIsImageUploadActive] = useState(false);
+    const [isUploadedImagePreviewVisible, setIsUploadedImagePreviewVisible] = useState(false);
+    const [previewImage, setPreviewImage] = useState(false);
+    const [uploadedImagePreviewTitle, setUploadedImagePreviewTitle] = useState(false);
+    const { Dragger } = Upload;
     const [addOrEditArtMovementTertiaryInformationForm] = Form.useForm();
     const [api, notificationContextHolder] = notification.useNotification();
     const [artMovementSearchText, setArtMovementSearchText] = useState('');
@@ -70,12 +84,18 @@ export default function ArtMovementsManagement() {
     const [selectedArtMovementsRowKeys, setSelectedArtMovementsRowKeys] = useState([]);
     const { token } = theme.useToken();
     const [artMovementStepperCurrentStep, setArtMovementStepperCurrentStep] = useState(0);
-    const [addOrEditArtMovementPrimaryInformationFormValues, setAddOrEditArtMovementPrimaryInformationFormValues] = useState({
+    const [
+        addOrEditArtMovementPrimaryInformationFormValues, 
+        setAddOrEditArtMovementPrimaryInformationFormValues
+    ] = useState({
         name: null,
         period: artMovementPeriods[0],
         periodRange: null
     });
-    const [addOrEditArtMovementTertiaryInformationFormValues, setAddOrEditArtMovementTertiaryInformationFormValues] = useState({
+    const [
+        addOrEditArtMovementTertiaryInformationFormValues, 
+        setAddOrEditArtMovementTertiaryInformationFormValues
+    ] = useState({
         description: null
     });
 
@@ -187,6 +207,83 @@ export default function ArtMovementsManagement() {
 
     const onAddOrEditArtMovementFormFinishFailed = (error) => {
         console.log('error', error);
+    }
+
+    const handleCancelImageUpload = () => {
+        setIsUploadedImagePreviewVisible(false);
+    }
+
+    const handleImagePreview = async (file) => {
+        if (!file.url && !file.preview) {
+            file.preview = await getBase64(file.originalFileObj);
+        }
+
+        setPreviewImage(file.url || file.preview);
+        setIsUploadedImagePreviewVisible(true);
+        setUploadedImagePreviewTitle(file.name || file.url.substring(file.url.lastIndexOf("/") + 1));
+    }
+
+    const beforeUpload = (file) => {
+        if (!["image/jpeg", "image/png"].includes(file.type)) {
+            message.error(`${file.name} is not a valid image type`, 2);
+            return null;
+        }
+
+        return false;
+    }
+
+    const handleImageChange = ({ fileList }) => {
+        setArtMovementImageFileList(fileList.filter(file => file.status !== 'error'));
+    }
+
+    const onImageRemove = async (file) => {
+        const index = artMovementImageFileList.indexOf(file);
+        const newFileList = artMovementImageFileList.slice();
+        newFileList.splice(index, 1);
+        setArtMovementImageFileList(newFileList);
+    }
+
+    const handleImageUploadFinish = async (values) => {
+        try {
+            setIsImageUploadActive(true);
+
+            await Promise.all(
+                artMovementImageFileList.map(async (file) => {
+                    const fileName = `uploads/images/${Date.now()}-${file.name}`;
+                    const fileReference = storage.ref().child(fileName);
+                    try {
+                        const uploadableFile = await fileReference.put(file.originalFileObj);
+                        const downloadUrl = await uploadableFile.ref.getDownloadURL();
+                        const item = {
+                            url: downloadUrl,
+                            path: fileName,
+                            uploadedOn: Timestamp.now()
+                        }
+                        await firestore.collection("images").add(item);
+                    } catch (error) {
+                        console.log(error);
+                    }
+                })
+            );
+
+            setArtMovementImageFileList([]);
+            message.success(`Images uploaded successfully.`, 2);
+        } catch (error) {
+            console.log(error);
+            message.error(`Error adding images.`, 2);
+        } finally {
+            setIsImageUploadActive(false);
+        }
+    }
+
+    const getBase64 = (file) => {
+        return new Promise((resolve, reject) => {
+            const fileReader = new FileReader();
+            console.log('THE FILE');
+            fileReader.readAsDataURL(file);
+            fileReader.onload = () => resolve(fileReader.result);
+            fileReader.onerror = (error) => reject(error);
+        })
     }
 
     const onOpenArtMovementDetailsModal = (currentArtMovement) => {
@@ -432,6 +529,13 @@ export default function ArtMovementsManagement() {
         }
     }
 
+    const tailLayout = {
+        wrapperCol: {
+            offset: 18,
+            span: 12
+        }
+    }
+
     const addOrEditArtMovementSteps = [
         {
             title: 'General',
@@ -497,7 +601,38 @@ export default function ArtMovementsManagement() {
         },
         {
             title: 'Image',
-            content: 'Second content'
+            content: (
+                <Form
+                  onFinish={handleImageUploadFinish}
+                >
+                    <div className="upload-container">
+                        <Dragger
+                            listType="picture-card"
+                            fileList={artMovementImageFileList}
+                            beforeUpload={beforeUpload}
+                            onPreview={handleImagePreview}
+                            onChange={handleImageChange}
+                            onRemove={onImageRemove}
+                            multiple={true}
+                            maxCount={4}
+                        >
+                            <div className="upload-icon">
+                                <UploadOutlined />
+                            </div>
+                            <div className="upload-text">
+                                <p>Drag and drop here</p>
+                                <p>OR</p>
+                                <p>Click</p>
+                            </div>
+                        </Dragger>
+                    </div>
+                    <Form.Item {...tailLayout}>
+                        <Button shape="round" htmlType="submit">
+                            {isImageUploadActive ? "Uploading" : "Upload"}
+                        </Button>
+                    </Form.Item>
+                </Form>
+            )
         },
         {
             title: 'Description',
@@ -737,7 +872,9 @@ export default function ArtMovementsManagement() {
                                 </Button>
                             )}
                             {artMovementStepperCurrentStep === addOrEditArtMovementSteps.length - 1 && (
-                                <Button type="primary" onClick={() => message('Processing...')}>
+                                <Button type="primary" onClick={() => {
+                                    
+                                }}>
                                     Done
                                 </Button>
                             )}

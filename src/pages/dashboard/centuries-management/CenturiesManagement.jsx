@@ -404,21 +404,22 @@ export default function CenturiesManagement() {
         }
     ]
 
-    const mergedCenturiesManagementTableColumns = centuriesManagementTableColumns.map((centuriesManagementTableCol) => {
-        if (!centuriesManagementTableCol.editable) {
-            return centuriesManagementTableCol;
-        }
+    const mergedCenturiesManagementTableColumns = centuriesManagementTableColumns
+        .map((centuriesManagementTableCol) => {
+            if (!centuriesManagementTableCol.editable) {
+                return centuriesManagementTableCol;
+            }
 
-        return {
-            ...centuriesManagementTableCol,
-            onCell: (century) => ({
-                century,
-                dataIndex: centuriesManagementTableCol.dataIndex,
-                inputType: 'text',
-                title: centuriesManagementTableCol.title,
-                editing: isCenturyEdited(century)
-            })
-        }
+            return {
+                ...centuriesManagementTableCol,
+                onCell: (century) => ({
+                    century,
+                    dataIndex: centuriesManagementTableCol.dataIndex,
+                    inputType: 'text',
+                    title: centuriesManagementTableCol.title,
+                    editing: isCenturyEdited(century)
+                })
+            }
     })
 
     const loadCenturiesData = useCallback(() => {

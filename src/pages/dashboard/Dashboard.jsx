@@ -55,6 +55,10 @@ export default function Dashboard() {
                             label: 'Nationalities'
                         },
                         {
+                            key: '/dashboard/centuries-management',
+                            label: 'Centuries'
+                        },
+                        {
                             key: '/dashboard/artists-management',
                             label: 'Artists'
                         },

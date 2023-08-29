@@ -1,10 +1,9 @@
 import { useState } from "react"
 import { Button, Form, Modal, Input, Space, Table, Row, Col, notification, Typography, Popconfirm } from "antd";
-import { ExclamationCircleOutlined } from "@ant-design/icons";
+import { ExclamationCircleOutlined, SearchOutlined } from "@ant-design/icons";
 import fieldsService from "../../../services/fields-service";
 import { useRef } from "react";
 import { useEffect } from "react";
-import { SearchOutlined } from "@ant-design/icons";
 import Highlighter from "react-highlight-words";
 import {
     maxLengthFieldErrorMessage,

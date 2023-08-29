@@ -6,6 +6,7 @@ import loadingReducer from './features/loading/loadingSlice';
 import fieldsReducer from './features/fields/fieldsSlice';
 import genresReducer from './features/genres/genresSlice';
 import nationalitiesReducer from './features/nationalities/nationalitiesSlice';
+import centuriesReducer from './features/centuries/centuriesSlice';
 
 export const store = configureStore({
     reducer: {
@@ -13,7 +14,8 @@ export const store = configureStore({
         loading: loadingReducer,
         fields: fieldsReducer,
         genres: genresReducer,
-        nationalities: nationalitiesReducer
+        nationalities: nationalitiesReducer,
+        centuries: centuriesReducer
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({

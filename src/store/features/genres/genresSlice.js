@@ -242,7 +242,7 @@ const genresSlice = createSlice({
                     state.loadingStatus = 'idle';
                     state.currentRequestId = undefined;
                     const { id } = action.payload;
-                    state.genresToManage = state.genresToManage.filter(genre => genre.id === id);
+                    state.genresToManage = state.genresToManage.filter(genre => genre.id !== id);
                 }
             })
             .addCase(hardDeleteGenreAsyncThunk.rejected, (state, action) => {

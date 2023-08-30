@@ -10,7 +10,11 @@ import {
     updateNationalityAsyncThunk
 } from "../../../store/features/nationalities/nationalitiesSlice";
 import Highlighter from "react-highlight-words";
-import { maxLengthFieldErrorMessage, minLengthFieldErrorMessage, requiredFieldErrorMessage } from "../../../helpers/global-constants";
+import { 
+    maxLengthFieldErrorMessage, 
+    minLengthFieldErrorMessage, 
+    requiredFieldErrorMessage 
+} from "../../../helpers/global-constants";
 
 const AddNationalityModal = ({ open, onCancel, onFinish, onFinishFailed }) => {
     const [addNationalityForm] = Form.useForm();

@@ -166,12 +166,11 @@ export default function FieldsManagement() {
             .unwrap()
             .then((_) => {
                 loadFieldsData();
+                setIsAddFieldModalOpened(false);
             })
             .catch((error) => {
                 console.log(error);
             });
-
-        setIsAddFieldModalOpened(false);
     }
 
     const onAddFieldFormFinishFailed = (error) => {
@@ -336,7 +335,7 @@ export default function FieldsManagement() {
             const { field } = editFieldFormValues;
             const editableFields = [...fieldsToManage];
             const editedFieldIndex = editableFields.findIndex((field) => field.id === confirmFieldEditId);
-
+            
             if (editedFieldIndex > -1) {
                 const fieldToEdit = editableFields[editedFieldIndex];
                 dispatch(updateFieldAsyncThunk({

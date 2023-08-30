@@ -197,7 +197,8 @@ const artMovementsSlice = createSlice({
                     state.loadingStatus = 'idle';
                     state.currentRequestId = undefined;
                     const { id, ...artMovementToSplice } = action.payload;
-                    const artMovementToSpliceIndex = state.artMovementsToManage.findIndex(artMovement => artMovement.id === id);
+                    const artMovementToSpliceIndex = state.artMovementsToManage
+                        .findIndex(artMovement => artMovement.id === id);
                     state.artMovementsToManage.splice(artMovementToSpliceIndex, 1, artMovementToSplice);
                 }
             })
@@ -242,7 +243,8 @@ const artMovementsSlice = createSlice({
                     state.loadingStatus = 'idle';
                     state.currentRequestId = undefined;
                     const { id } = action.payload;
-                    state.artMovementsToManage = state.artMovementsToManage.filter(artMovement => artMovement.id === id); 
+                    state.artMovementsToManage = state.artMovementsToManage
+                        .filter(artMovement => artMovement.id !== id); 
                 }
             })
             .addCase(hardDeleteArtMovementAsyncThunk.rejected, (state, action) => {

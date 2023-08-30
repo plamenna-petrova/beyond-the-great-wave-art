@@ -242,7 +242,7 @@ const centuriesSlice = createSlice({
                     state.loadingStatus = 'idle';
                     state.currentRequestId = undefined;
                     const { id } = action.payload;
-                    state.centuriesToManage = state.centuriesToManage.filter(century => century.id === id);
+                    state.centuriesToManage = state.centuriesToManage.filter(century => century.id !== id);
                 }
             })
             .addCase(hardDeleteCenturyAsyncThunk.rejected, (state, action) => {

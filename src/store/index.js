@@ -8,6 +8,7 @@ import genresReducer from './features/genres/genresSlice';
 import artMovementsReducer from './features/art-movements/artMovementsSlice';
 import nationalitiesReducer from './features/nationalities/nationalitiesSlice';
 import centuriesReducer from './features/centuries/centuriesSlice';
+import stylesReducer from './features/styles/stylesSlice';
 
 export const store = configureStore({
     reducer: {
@@ -17,7 +18,8 @@ export const store = configureStore({
         artMovements: artMovementsReducer,
         genres: genresReducer,
         nationalities: nationalitiesReducer,
-        centuries: centuriesReducer
+        centuries: centuriesReducer,
+        styles: stylesReducer
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({

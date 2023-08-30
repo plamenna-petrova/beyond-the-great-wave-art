@@ -242,7 +242,7 @@ const fieldsSlice = createSlice({
                     state.loadingStatus = 'idle';
                     state.currentRequestId = undefined;
                     const { id } = action.payload;
-                    state.fieldsToManage = state.fieldsToManage.filter(field => field.id === id);
+                    state.fieldsToManage = state.fieldsToManage.filter(field => field.id !== id);
                 }
             })
             .addCase(hardDeleteFieldAsyncThunk.rejected, (state, action) => {

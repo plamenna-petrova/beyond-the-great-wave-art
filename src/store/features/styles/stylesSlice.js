@@ -1,117 +1,117 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
-import nationalitiesService from "../../../services/nationalities-service";
+import stylesService from "../../../services/styles-service";
 
-const nationalitiesInitialState = {
-    nationalitiesToManage: [],
+const stylesInitialState = {
+    stylesToManage: [],
     loadingStatus: 'idle',
     currentRequestId: undefined,
     error: null
 }
 
-export const getAllNationalitiesAsyncThunk = createAsyncThunk(
-    "nationalities/getAll",
+export const getAllStylesAsyncThunk = createAsyncThunk(
+    "styles/getAll",
     async (_, { rejectWithValue }) => {
         try {
-            const allNationalities = await nationalitiesService.getAllNationalitiesAsync();
-            return allNationalities;
+            const allStyles = await stylesService.getAllStylesAsync();
+            return allStyles;
         } catch (error) {
             return rejectWithValue(error.response.data);
         }
     }
 )
 
-export const getAllNationalitiesWithDeletedAsyncThunk = createAsyncThunk(
-    "nationalities/getAllWithDeleted",
+export const getAllStylesWithDeletedAsyncThunk = createAsyncThunk(
+    "styles/getAllWithDeleted",
     async (_, { rejectWithValue }) => {
         try {
-            const allNationalitiesWithDeleted = await nationalitiesService.getAllNationalitiesWithDeletedAsync();
-            return allNationalitiesWithDeleted;
+            const allStylesWithDeleted = await stylesService.getAllStylesWithDeletedAsync();
+            return allStylesWithDeleted;
         } catch (error) {
             return rejectWithValue(error.response.data);
         }
     }
 )
 
-export const getNationalityByIdAsyncThunk = createAsyncThunk(
-    "nationalities/getById",
+export const getStyleByIdAsyncThunk = createAsyncThunk(
+    "styles/getById",
     async ({ id }, { rejectWithValue }) => {
         try {
-            const nationalityById = await nationalitiesService.getNationalityByIdAsync(id);
-            return nationalityById;
+            const styleById = await stylesService.getStyleByIdAsync(id);
+            return styleById;
         } catch (error) {
             return rejectWithValue(error.response.data);
         }
     }
 )
 
-export const createNationalityAsyncThunk = createAsyncThunk(
-    "nationalities/create",
-    async ({ nationalityToCreate }, { rejectWithValue }) => {
+export const createStyleAsyncThunk = createAsyncThunk(
+    "styles/create",
+    async ({ styleToCreate }, { rejectWithValue }) => {
         try {
-            await nationalitiesService.createNationalityAsync(nationalityToCreate);
-            return nationalityToCreate;
+            await stylesService.createStyleAsync(styleToCreate);
+            return styleToCreate;
         } catch (error) {
             return rejectWithValue(error.response.data);
         }
     }
 )
 
-export const updateNationalityAsyncThunk = createAsyncThunk(
-    "nationalities/update",
-    async ({ nationalityToUpdateId, updateNationalityData }, { rejectWithValue }) => {
+export const updateStyleAsyncThunk = createAsyncThunk(
+    "styles/update",
+    async ({ styleToUpdateId, updateStyleData }, { rejectWithValue }) => {
+        try {   
+            await stylesService.updateStyleAsync(styleToUpdateId, updateStyleData);
+            return { id: styleToUpdateId, ...updateStyleData };
+        } catch (error) {
+            return rejectWithValue(error.response.data);
+        }
+    }
+)
+
+export const softDeleteStyleAsyncThunk = createAsyncThunk(
+    "styles/softDelete",
+    async ({ styleToSoftDeleteId, softDeleteStyleData }, { rejectWithValue }) => {
         try {
-            await nationalitiesService.updateNationalityAsync(nationalityToUpdateId, updateNationalityData);
-            return { id: nationalityToUpdateId, ...updateNationalityData };
+            await stylesService.softDeleteStyleAsync(styleToSoftDeleteId, softDeleteStyleData);
         } catch (error) {
             return rejectWithValue(error.response.data);
         }
     }
 )
 
-export const softDeleteNationalityAsyncThunk = createAsyncThunk(
-    "nationalities/softDelete",
-    async ({ nationalityToSoftDeleteId, softDeleteNationalityData }, { rejectWithValue }) => {
+export const hardDeleteStyleAsyncThunk = createAsyncThunk(
+    "styles/hardDelete",
+    async ({ styleToHardDeleteId }, { rejectWithValue }) => {
         try {
-            await nationalitiesService.softDeleteNationalityAsync(nationalityToSoftDeleteId, softDeleteNationalityData);
+            await stylesService.hardDeleteStyleAsync(styleToHardDeleteId);
+            return styleToHardDeleteId;
         } catch (error) {
             return rejectWithValue(error.response.data);
         }
     }
 )
 
-export const hardDeleteNationalityAsyncThunk = createAsyncThunk(
-    "nationalities/hardDelete",
-    async ({ nationalityToHardDeleteId }, { rejectWithValue }) => {
-        try {
-            await nationalitiesService.hardDeleteNationalityAsync(nationalityToHardDeleteId);
-            return nationalityToHardDeleteId;
-        } catch (error) {
-            return rejectWithValue(error.response.data);
-        }
-    }
-)
-
-const nationalitiesSlice = createSlice({
-    name: "nationalities",
-    initialState: nationalitiesInitialState,
+const stylesSlice = createSlice({
+    name: "styles",
+    initialState: stylesInitialState,
     reducers: {},
     extraReducers: (builder) => {
         builder
-            .addCase(getAllNationalitiesAsyncThunk.pending, (state, action) => {
+            .addCase(getAllStylesAsyncThunk.pending, (state, action) => {
                 if (state.loadingStatus === 'idle') {
                     state.loadingStatus = 'pending';
                     state.currentRequestId = action.meta.requestId;
                 }
             })
-            .addCase(getAllNationalitiesAsyncThunk.fulfilled, (state, action) => {
+            .addCase(getAllStylesAsyncThunk.fulfilled, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
                     state.currentRequestId = undefined;
-                    state.nationalitiesToManage = [...action.payload];
+                    state.stylesToManage = [...action.payload];
                 }
             })
-            .addCase(getAllNationalitiesAsyncThunk.rejected, (state, action) => {
+            .addCase(getAllStylesAsyncThunk.rejected, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
@@ -119,21 +119,21 @@ const nationalitiesSlice = createSlice({
                     state.currentRequestId = undefined;
                 }
             })
-            .addCase(getAllNationalitiesWithDeletedAsyncThunk.pending, (state, action) => {
+            .addCase(getAllStylesWithDeletedAsyncThunk.pending, (state, action) => {
                 if (state.loadingStatus === 'idle') {
                     state.loadingStatus = 'pending';
                     state.currentRequestId = action.meta.requestId;
                 }
             })
-            .addCase(getAllNationalitiesWithDeletedAsyncThunk.fulfilled, (state, action) => {
+            .addCase(getAllStylesWithDeletedAsyncThunk.fulfilled, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
                     state.currentRequestId = undefined;
-                    state.nationalitiesToManage = [...action.payload];
+                    state.stylesToManage = [...action.payload];
                 }
             })
-            .addCase(getAllNationalitiesWithDeletedAsyncThunk.rejected, (state, action) => {
+            .addCase(getAllStylesWithDeletedAsyncThunk.rejected, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
@@ -141,13 +141,13 @@ const nationalitiesSlice = createSlice({
                     state.currentRequestId = undefined;
                 }
             })
-            .addCase(getNationalityByIdAsyncThunk.pending, (state, action) => {
+            .addCase(getStyleByIdAsyncThunk.pending, (state, action) => {
                 if (state.loadingStatus === 'idle') {
                     state.loadingStatus = 'pending';
                     state.currentRequestId = action.meta.requestId;
                 }
             })
-            .addCase(getNationalityByIdAsyncThunk.fulfilled, (state, action) => {
+            .addCase(getStyleByIdAsyncThunk.fulfilled, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
@@ -155,7 +155,7 @@ const nationalitiesSlice = createSlice({
                     return action.payload;
                 }
             })
-            .addCase(getNationalityByIdAsyncThunk.rejected, (state, action) => {
+            .addCase(getStyleByIdAsyncThunk.rejected, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
@@ -163,21 +163,21 @@ const nationalitiesSlice = createSlice({
                     state.currentRequestId = undefined;
                 }
             })
-            .addCase(createNationalityAsyncThunk.pending, (state, action) => {
+            .addCase(createStyleAsyncThunk.pending, (state, action) => {
                 if (state.loadingStatus === 'idle') {
                     state.loadingStatus = 'pending';
                     state.currentRequestId = action.meta.requestId;
                 }
             })
-            .addCase(createNationalityAsyncThunk.fulfilled, (state, action) => {
+            .addCase(createStyleAsyncThunk.fulfilled, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
                     state.currentRequestId = undefined;
-                    state.nationalitiesToManage.push(action.payload);
+                    state.stylesToManage.push(action.payload);
                 }
             })
-            .addCase(createNationalityAsyncThunk.rejected, (state, action) => {
+            .addCase(createStyleAsyncThunk.rejected, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
@@ -185,24 +185,23 @@ const nationalitiesSlice = createSlice({
                     state.currentRequestId = undefined;
                 }
             })
-            .addCase(updateNationalityAsyncThunk.pending, (state, action) => {
+            .addCase(updateStyleAsyncThunk.pending, (state, action) => {
                 if (state.loadingStatus === 'idle') {
                     state.loadingStatus = 'pending';
                     state.currentRequestId = action.meta.requestId;
                 }
             })
-            .addCase(updateNationalityAsyncThunk.fulfilled, (state, action) => {
+            .addCase(updateStyleAsyncThunk.fulfilled, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
                     state.currentRequestId = undefined;
-                    const { id, ...nationalityToSplice } = action.payload;
-                    const nationalityToSpliceIndex = state.nationalitiesToManage
-                        .findIndex(nationality => nationality.id === id);
-                    state.nationalitiesToManage.splice(nationalityToSpliceIndex, 1, nationalityToSplice);
+                    const { id, ...styleToSplice } = action.payload;
+                    const styleToSpliceIndex = state.stylesToManage.findIndex(style => style.id === id);
+                    state.stylesToManage.splice(styleToSpliceIndex, 1, styleToSplice);
                 }
             })
-            .addCase(updateNationalityAsyncThunk.rejected, (state, action) => {
+            .addCase(updateStyleAsyncThunk.rejected, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
@@ -210,20 +209,20 @@ const nationalitiesSlice = createSlice({
                     state.currentRequestId = undefined;
                 }
             })
-            .addCase(softDeleteNationalityAsyncThunk.pending, (state, action) => {
+            .addCase(softDeleteStyleAsyncThunk.pending, (state, action) => {
                 if (state.loadingStatus === 'idle') {
                     state.loadingStatus = 'pending';
                     state.currentRequestId = action.meta.requestId;
-                } 
+                }
             })
-            .addCase(softDeleteNationalityAsyncThunk.fulfilled, (state, action) => {
+            .addCase(softDeleteStyleAsyncThunk.fulfilled, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
                     state.currentRequestId = undefined;
                 }
             })
-            .addCase(softDeleteNationalityAsyncThunk.rejected, (state, action) => {
+            .addCase(updateStyleAsyncThunk.rejected, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
@@ -231,23 +230,22 @@ const nationalitiesSlice = createSlice({
                     state.currentRequestId = undefined;
                 }
             })
-            .addCase(hardDeleteNationalityAsyncThunk.pending, (state, action) => {
+            .addCase(hardDeleteStyleAsyncThunk.pending, (state, action) => {
                 if (state.loadingStatus === 'idle') {
                     state.loadingStatus = 'pending';
                     state.currentRequestId = action.meta.requestId;
                 }
             })
-            .addCase(hardDeleteNationalityAsyncThunk.fulfilled, (state, action) => {
+            .addCase(hardDeleteStyleAsyncThunk.fulfilled, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
                     state.currentRequestId = undefined;
-                    const { id } = action.payload;
-                    state.nationalitiesToManage = state.nationalitiesToManage
-                        .filter(nationality => nationality.id !== id);
+                    const {id } = action.payload;
+                    state.stylesToManage = state.stylesToManage.filter(style => style.id !== id);
                 }
             })
-            .addCase(hardDeleteNationalityAsyncThunk.rejected, (state, action) => {
+            .addCase(hardDeleteStyleAsyncThunk.rejected, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';
@@ -258,4 +256,4 @@ const nationalitiesSlice = createSlice({
     }
 })
 
-export default nationalitiesSlice.reducer;
+export default stylesSlice.reducer;

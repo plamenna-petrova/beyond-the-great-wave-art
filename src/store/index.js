@@ -9,6 +9,7 @@ import artMovementsReducer from './features/art-movements/artMovementsSlice';
 import nationalitiesReducer from './features/nationalities/nationalitiesSlice';
 import centuriesReducer from './features/centuries/centuriesSlice';
 import stylesReducer from './features/styles/stylesSlice';
+import mediaReducer from './features/media/mediaSlice';
 
 export const store = configureStore({
     reducer: {
@@ -19,7 +20,8 @@ export const store = configureStore({
         genres: genresReducer,
         nationalities: nationalitiesReducer,
         centuries: centuriesReducer,
-        styles: stylesReducer
+        styles: stylesReducer,
+        media: mediaReducer
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({

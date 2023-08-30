@@ -65,6 +65,14 @@ export default function Dashboard() {
                         {
                             key: '/dashboard/galleries-management',
                             label: 'Galleries'
+                        },
+                        {
+                            key: '/dashboard/styles-management',
+                            label: 'Styles'
+                        },
+                        {
+                            key: '/dashboard/media-managment',
+                            label: 'Media'
                         }
                     ]}
                 />

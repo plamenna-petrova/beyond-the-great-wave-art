@@ -71,7 +71,7 @@ export default function Dashboard() {
                             label: 'Styles'
                         },
                         {
-                            key: '/dashboard/media-managment',
+                            key: '/dashboard/media-management',
                             label: 'Media'
                         }
                     ]}

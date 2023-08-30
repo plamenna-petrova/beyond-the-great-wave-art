@@ -222,7 +222,7 @@ const stylesSlice = createSlice({
                     state.currentRequestId = undefined;
                 }
             })
-            .addCase(updateStyleAsyncThunk.rejected, (state, action) => {
+            .addCase(softDeleteStyleAsyncThunk.rejected, (state, action) => {
                 const { requestId } = action.meta;
                 if (state.loadingStatus === 'pending' && state.currentRequestId === requestId) {
                     state.loadingStatus = 'idle';

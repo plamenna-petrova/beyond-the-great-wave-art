@@ -41,6 +41,7 @@ import {
 } from "../../../store/features/art-movements/artMovementsSlice";
 import { firestore, storage } from "../../../firebase";
 import { Timestamp } from "firebase/firestore";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 
 export const artMovementPeriods = [
     'Ancient Egyptian Art',
@@ -249,17 +250,16 @@ export default function ArtMovementsManagement() {
 
             await Promise.all(
                 artMovementImageFileList.map(async (file) => {
-                    const fileName = `uploads/images/${Date.now()}-${file.name}`;
-                    const fileReference = storage.ref().child(fileName);
+                    const fileName = `art-movements/${Date.now()}-${file.name}`;
+                    const imageReference = ref(storage, `images/${fileName}`);
+                    
                     try {
-                        const uploadableFile = await fileReference.put(file.originalFileObj);
-                        const downloadUrl = await uploadableFile.ref.getDownloadURL();
-                        const item = {
-                            url: downloadUrl,
-                            path: fileName,
-                            uploadedOn: Timestamp.now()
-                        }
-                        await firestore.collection("images").add(item);
+                        uploadBytes(imageReference, file).then((snapshot) => {
+                            getDownloadURL(snapshot.ref).then((url) => {
+                                console.log('URL');
+                                console.log(url);
+                            })
+                        })
                     } catch (error) {
                         console.log(error);
                     }

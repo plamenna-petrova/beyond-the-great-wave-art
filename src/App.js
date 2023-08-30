@@ -28,6 +28,7 @@ import GenresManagement from "./pages/dashboard/genres-management/GenresManageme
 import NationalitiesManagement from "./pages/dashboard/nationalities-management/NationalitiesManagement";
 import CenturiesManagement from "./pages/dashboard/centuries-management/CenturiesManagement";
 import StylesManagement from "./pages/dashboard/styles-management/StylesManagement";
+import MediaManagement from "./pages/dashboard/media-management/MediaManagement";
 
 export default function App() {
     const isLoadingSpinnerActive = useSelector((state) => state.loading.isLoadingSpinnerActive);
@@ -55,6 +56,7 @@ export default function App() {
                     <Route path="artists-management" element={<ArtistsManagement />}></Route>
                     <Route path="galleries-management" element={<GalleriesManagement />}></Route>
                     <Route path="styles-management" element={<StylesManagement />}></Route>
+                    <Route path="media-management" element={<MediaManagement />}></Route>
                 </Route>
                 <Route path="*" element={<NotFoundPage />}></Route>
             </Routes>
